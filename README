@@ -1,0 +1,13 @@
+# cljain
+
+A JAIN-SIP Clojure binding and more.
+
+## Usage
+
+FIXME: write
+
+## License
+
+Copyright (C) 2012 Ruiyun Wen
+
+Distributed under the Eclipse Public License, the same as Clojure.
