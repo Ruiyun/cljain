@@ -5,21 +5,13 @@
       <configuration />
     </facet>
   </component>
-  <component name="NewModuleRootManager" inherit-compiler-output="false">
-    <output url="file://$MODULE_DIR$/classes" />
-    <output-test url="file://$MODULE_DIR$/classes" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="clojure-1.4.0" level="project" />
-    <orderEntry type="library" name="jain-sip-api-1.2.1.4" level="project" />
-    <orderEntry type="library" name="jain-sip-ri-1.2.166" level="project" />
-    <orderEntry type="library" name="log4j-1.2.16" level="project" />
-    <orderEntry type="library" name="tools.logging-0.2.3" level="project" />
   </component>
 </module>
 
