@@ -1,18 +1,21 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.address
-  (:use cljain.core)
+  (:use [cljain.core :only [sip-factory]])
   (:import [javax.sip SipFactory]
-           [javax.sip.address AddressFactory Address SipURI]))
+           [javax.sip.address AddressFactory URI SipURI Address]))
 
 (def ^{:doc "place doc string here"
        :added "0.2.0"
        :private true}
   factory (.createAddressFactory sip-factory))
 
-(defn uri
-  "place doc string here"
-  {:added "0.2.0"}
+(defn sip-uri
+  "Create a new SipURI object.
+  It is useful to create the sip ReqURI or Address.
+
+  (sip-uri \"localhost\" :port 5060 :transport \"udp\" :user \"tom\")"
+  {:added "0.1.0"}
   [host & options]
   {:pre [(even? (count options))]
    :post [(instance? SipURI %)]}
@@ -23,12 +26,21 @@
     (and transport (.setTransportParam uri transport))
     uri))
 
-(defn address
-  "place doc string here"
+(defn tel-uri
+  "Create a new TelURI object with a phone number.
+
+  (tel-uri 12345678) or (tel-uri \"12345678\")"
   {:added "0.2.0"}
-  ([uri]
+  [phone-number]
+  (.createTelURL factory (str phone-number)))
+
+(defn address
+  "Create a new Address object using a URI.
+  It useful to create the To header etc."
+  {:added "0.1.0"}
+  ([^URI uri]
     {:post [(instance? Address %)]}
     (.createAddress factory uri))
-  ([uri display-name]
+  ([^URI uri display-name]
     {:post [(instance? Address %)]}
     (.createAddress factory display-name uri)))
