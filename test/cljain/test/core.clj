@@ -1,6 +1,10 @@
 (ns cljain.test.core
-  (:use [cljain.core])
-  (:use [clojure.test]))
+  (:use cljain.core)
+  (:use clojure.test)
+  (:import [javax.sip SipProvider]))
 
-(deftest replace-me ;; FIXME: write
-  (is false "No tests have been written."))
+(deftest send-message-no-transaction
+  (binding [*sip-provider* (reify SipProvider
+                            (sendRequest [this request]
+                              (is ())))]))
+

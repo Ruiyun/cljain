@@ -2,6 +2,17 @@
       :author "ruiyun"}
   cljain.util)
 
+(defn legal-option?
+  "place doc string here"
+  {:added "0.2.0"}
+  [options option-key f & required?]
+  (let [popts (partition-by #(= % option-key) options)]
+    (if (> (count popts) 1) ; means option key has been found
+      (f (first (last popts)))
+      (if (= (first required?) :required)
+        false
+        true))))
+
 (defn legal-proxy-address?
   "判断地址格式是否合法，如合法，返回非空集合，否则返回nil."
   {:added "0.2.0"}
