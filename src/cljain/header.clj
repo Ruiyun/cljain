@@ -5,12 +5,37 @@
   (:use clojure.string
         [cljain.core :only [sip-factory]])
   (:import [javax.sip SipFactory]
-           [gov.nist.javax.sip Utils]))
+           [javax.sip.header HeaderFactory]
+           [gov.nist.javax.sip Utils]
+           [java.lang Class]
+           [java.lang.reflect Method]))
 
 (def ^{:doc "place doc string here"
        :added "0.2.0"
        :private true}
   factory (.createHeaderFactory sip-factory))
+
+(defn convert-name
+  "place doc string here"
+  {:added "0.2.0"}
+  [java-name]
+  (let [java-name (cond
+                    (= java-name "createCSeqHeader") "createCseqHeader"
+                    (= java-name "createRSeqHeader") "createRseqHeader"
+                    (= java-name "createWWWAuthenticateHeader") "createWwwAuthenticateHeader"
+                    (= java-name "createSIPIfMatchHeader") "createSipIfMatchHeader"
+                    (= java-name "createSIPETagHeader") "createSipEtagHeader"
+                    (= java-name "createRAckHeader") "createRackHeader"
+                    (or (= java-name "Headers") (= java-name "Header")) java-name
+                    :else (apply butlast java-name))]
+        (subs (lower-case (replace java-name #"[A-Z][a-z]" #(str "-" %1))) 7)))
+
+(defn header-create-methods
+  "place doc string here"
+  {:added "0.2.0"}
+  []
+  (map #(vector (convert-name (.getName %))) (.getMethods HeaderFactory)))
+
 
 (defn gen-tag
   "Generate a new tag string."
