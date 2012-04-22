@@ -1,41 +1,18 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.header
-  (:refer-clojure :exclude [replace reverse])
+  (:refer-clojure :exclude [replace reverse require])
   (:use clojure.string
         [cljain.core :only [sip-factory]])
   (:import [javax.sip SipFactory]
            [javax.sip.header HeaderFactory]
-           [gov.nist.javax.sip Utils]
-           [java.lang Class]
-           [java.lang.reflect Method]))
+           [javax.sip.address Address URI]
+           [gov.nist.javax.sip Utils]))
 
 (def ^{:doc "place doc string here"
        :added "0.2.0"
        :private true}
   factory (.createHeaderFactory sip-factory))
-
-(defn convert-name
-  "place doc string here"
-  {:added "0.2.0"}
-  [java-name]
-  (let [java-name (cond
-                    (= java-name "createCSeqHeader") "createCseqHeader"
-                    (= java-name "createRSeqHeader") "createRseqHeader"
-                    (= java-name "createWWWAuthenticateHeader") "createWwwAuthenticateHeader"
-                    (= java-name "createSIPIfMatchHeader") "createSipIfMatchHeader"
-                    (= java-name "createSIPETagHeader") "createSipEtagHeader"
-                    (= java-name "createRAckHeader") "createRackHeader"
-                    (or (= java-name "Headers") (= java-name "Header")) java-name
-                    :else (apply butlast java-name))]
-        (subs (lower-case (replace java-name #"[A-Z][a-z]" #(str "-" %1))) 7)))
-
-(defn header-create-methods
-  "place doc string here"
-  {:added "0.2.0"}
-  []
-  (map #(vector (convert-name (.getName %))) (.getMethods HeaderFactory)))
-
 
 (defn gen-tag
   "Generate a new tag string."
@@ -52,56 +29,96 @@
 (defmacro defheader
   "Use the macro to define sip headers. More document could be found here
   http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html"
-  {:arglists '([name docstring? attr-map? [args*]])
+  {:arglists '([name [args*]])
    :added "0.2.0"}
-  [name & decl]
-  (let [docstring (if (string? (first decl))
-                    (first decl)
-                    nil)
-        decl      (if (string? (first decl))
-                    (next decl)
-                    decl)
-        m         (if (map? (first decl))
-                    (first decl)
-                    {})
-        args      (if (map? (first decl))
-                   (next decl)
-                   decl)
-        args      (first args)
-        m         (if docstring
-                    (assoc m :doc docstring)
-                    m)
-        m         (if (meta name)
-                    (conj (meta name) m)
-                    m)
-        m         (conj {:arglists (list 'quote (list args))} m)
-        cls-name  (replace (capitalize name) #"-[a-z]" #(upper-case (subs %1 1)))
+  [name args]
+  (let [cls-name  (replace (capitalize name) #"-[a-z]" #(upper-case (subs %1 1)))
         cls-name  (str cls-name "Header")
         name      (symbol name)
-        method    (symbol (str "create" cls-name))]
-    `(do
-       (def ~(with-meta name m) (partial (memfn ~method ~@args) ~factory)))))
+        method    (symbol (str "create" cls-name))
+        m         {:doc (str "Create a new " cls-name), :arglists (list 'quote (list args)), :added "0.2.0"}]
+    `(def ~(with-meta name m) (partial (memfn ~method ~@args) ~factory))))
 
-(defheader accept
-  "Creates a new AcceptEncodingHeader based on the newly supplied encoding value."
-  [content-type sub-type])
-;(defheader accept-encoding    encoding)
-;(defheader accept-language    language)
-;(defheader alert-info         alertInfo)
-;(defheader c-seq              number method)
-;(defheader from address tag)
-;(defheader to address tag)
-;(defheader via host port transport branch)
-;(defheader max-forwards number)
-;(defheader contact address)
-;(defheader expires seconds)
-;(defheader call-id id)
-(defheader allow
-  "Help me"
+(defheader accept [^String content-type, ^String sub-type])
+(defheader accept-encoding [^String encoding])
+(defheader accept-language [^java.util.Locale language])
+(defheader alert-info [^URI info])
+(defheader allow [^String method])
+(defheader allow-events [^String event-type])
+(defheader authentication-info [^String response])
+(defheader authorization [^String scheme])
+(defheader c-seq [^Long number, ^String method])
+(defheader call-id [^String id])
+(defheader call-info [^URI info])
+(defheader contact [^Address address])
+(defheader content-disposition [^String disposition-type])
+(defheader content-encoding [^String encoding])
+(defheader content-language [^java.util.Locale language])
+(defheader content-length [^Integer length])
+(defheader content-type [^String type, ^String sub-type])
+(defheader date [^java.util.Calendar date])
+(defheader error-info [^URI info])
+(defheader event [^String type])
+(defheader expires [^Integer seconds])
+(defheader from [^Address address, ^String tag])
+(defheader in-reply-to [^String call-id])
+(defheader max-forwards [^Integer number])
+(defheader mime-version [^Integer major, ^Integer minor])
+(defheader min-expires [^Integer seconds])
+(defheader organization [^String value])
+(defheader priority [^String value])
+(defheader proxy-authenticate [^String scheme])
+(defheader proxy-authorization [^String scheme])
+(defheader proxy-require [^String option-tag])
+(defheader r-ack [^Integer r-seq, ^Integer c-seq, ^String method])
+(defheader r-seq [^Integer number])
+(defheader reason [^String protocol ^Integer, cause ^String text])
+(defheader record-route [^Address address])
+(defheader refer-to [^Address address])
+(defheader reply-to [^Address address])
+(defheader require [^String option-tag])
+(defheader retry-after [^Integer seconds])
+(defheader route [^Address address])
+(defheader server [^java.util.List product])
+(defheader subject [^String subject])
+(defheader subscription-state [^String state])
+(defheader supported [^String option-tag])
+(defheader time-stamp [^Float time])
+(defheader to [^Address address, ^String tag])
+(defheader unsupported [^String option-tag])
+(defheader user-agent [^java.util.List product])
+(defheader via [^String host, ^Integer port, ^String transport, ^String branch])
+(defheader warning [^String agent, ^Integer code, ^String comment]) ; 3DIGIT code between 99 and 1000
+
+(defn sip-etag
+  "Creates a new SIP-ETag header with the supplied tag value"
   {:added "0.2.0"}
-  [method])
+  [^String etag]
+  (.createSIPETagHeader factory etag))
 
-;(defheader content-type [type sub-type])
+(defn sip-if-match
+  "Creates a new SIP-If-Match header with the supplied tag value"
+  {:added "0.2.0"}
+  [^String etag]
+  (.createSIPIfMatchHeader factory etag))
+
+(defn wildcard-contact
+  "Creates a new wildcard ContactHeader.
+  This is used in Register requests to indicate to the server that it should remove all locations the at which
+  the user is currently available. This implies that the following conditions are met:
+
+  ContactHeader.getAddress.getUserInfo() == *;
+  ContactHeader.getAddress.isWildCard() == true;
+  ContactHeader.getExpires() == 0;"
+  {:added "0.2.0"}
+  []
+  (.createContactHeader factory))
+
+(defn www-authenticate
+  "Creates a new WWWAuthenticateHeader based on the newly supplied scheme value."
+  {:added "0.2.0"}
+  [^String scheme]
+  (.createWWWAuthenticateHeader factory scheme))
 
 (defn extension
   "Creates a new Header based on the newly supplied name and value values."
