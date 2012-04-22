@@ -10,3 +10,4 @@
 /libsrc
 /docs/uberdoc.html
 *.iml
+autodoc/**
