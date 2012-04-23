@@ -100,7 +100,7 @@
   {:pre [(contains? #{TimeoutEvent TransactionTerminatedEvent} (class evt))]}
   (or (.getServerTransaction evt) (.getClientTransaction evt)))
 
-(defn- create-listener
+(defn create-listener
   "place doc string here"
   {:added "0.2.0"}
   [ctx-name]

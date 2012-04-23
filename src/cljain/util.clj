@@ -2,16 +2,48 @@
       :author "ruiyun"}
   cljain.util)
 
-(defn legal-option?
+(defn in?
   "place doc string here"
   {:added "0.2.0"}
-  [options option-key f & required?]
-  (let [popts (partition-by #(= % option-key) options)]
-    (if (> (count popts) 1) ; means option key has been found
-      (f (first (last popts)))
-      (if (= (first required?) :required)
-        false
-        true))))
+  [v coll]
+  (some #(= % v) coll))
+
+(defmacro legal-option?
+  "place doc string here"
+  {:added "0.2.0"}
+  [required? & decl]
+  (let [options     (first decl)
+        decl        (next decl)
+        option-key  (first decl)
+        decl        (next decl)
+        modifier    (if (= :by (first decl))
+                       (fnext decl)
+                       identity)
+        decl        (if (= :by (first decl))
+                       (nnext decl)
+                       decl)
+        f           (first decl)
+        args        (next decl)]
+     `(let [popts# (partition-by (partial = ~option-key) ~options)
+             opt_exist?# (> (count popts#) 1)]
+        (if opt_exist?#
+          (let [opt# (~modifier (first (last popts#)))]
+            (~f opt# ~@args))
+          (not ~required?)))))
+
+(defmacro check-required
+  "place doc string here"
+  {:arglists '([options option-key :by? option-modifier? f & args])
+   :added "0.2.0"}
+  [& decl]
+  `(legal-option? true ~@decl))
+
+(defmacro check-optional
+  "place doc string here"
+  {:arglists '([options option-key :by? option-modifier? f & args])
+   :added "0.2.0"}
+  [& decl]
+  `(legal-option? false ~@decl))
 
 (defn legal-proxy-address?
   "判断地址格式是否合法，如合法，返回非空集合，否则返回nil."
@@ -37,9 +69,3 @@
       (if transport
         (assoc address :transport (.toUpperCase transport))
         address))))
-
-(defmacro check-nullable
-  "检查可选的参数是否能通过`check-fn`校验，如果`arg`为空，则直接通过检查."
-  {:added "0.2.0"}
-  [arg check-fn & check-fn-args]
-  `(or (nil? ~arg) (~check-fn ~arg ~@check-fn-args)))
