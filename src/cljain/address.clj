@@ -44,3 +44,21 @@
   ([^URI uri display-name]
     {:post [(instance? Address %)]}
     (.createAddress factory display-name uri)))
+
+(defn uri-from-address
+  "Get the URI member from a Address object."
+  {:added "0.2.0"}
+  [^Address address]
+  (.getURI address))
+
+(defn address?
+  "Check the 'obj' is an instance of javax.sip.Address."
+  {:added "0.2.0"}
+  [obj]
+  (instance? Address obj))
+
+(defn uri?
+  "Check the 'obj' is an instance of javax.sip.URI."
+  {:added "0.2.0"}
+  [obj]
+  (instance? URI obj))

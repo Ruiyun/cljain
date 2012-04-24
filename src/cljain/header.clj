@@ -5,7 +5,7 @@
   (:use clojure.string
         [cljain.core :only [sip-factory]])
   (:import [javax.sip SipFactory]
-           [javax.sip.header HeaderFactory]
+           [javax.sip.header HeaderFactory HeaderAddress]
            [javax.sip.address Address URI]
            [gov.nist.javax.sip Utils]))
 
@@ -125,3 +125,9 @@
   {:added "0.2.0"}
   [name value]
   (.createHeader factory name (str value)))
+
+(defn get-address
+  "place doc string here"
+  {:added "0.2.0"}
+  [^HeaderAddress header]
+  (.getAddress header))

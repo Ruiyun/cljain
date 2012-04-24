@@ -5,7 +5,7 @@
         clojure.xml
         cljain.sip
         cljain.address)
-  (:import [javax.sip SipProvider]
+  (:import [javax.sip SipProvider SipStack]
            [javax.sip.message Request]))
 
 (defn xml [content]
@@ -18,6 +18,13 @@
   (binding [*sip-provider*
             (reify SipProvider
               (sendRequest [this request]
-                (is (= (.getMethod request) Request/MESSAGE))))]
+                (is (= (.getMethod request) Request/MESSAGE)))
+              (getNewCallId [this]
+                "1234567890")
+              (getSipStack [this]
+                (reify SipStack
+                  (getStackName [this]
+                    "test"))))
+            cljain.sip/account-map (atom {"test" {:user "bob" :domain "test.com" :display-name "Bob"}})]
     (let [content "<Books Catlog='IT'><Book><Name>Clojure in Action</Name></Book></Books>"])
-    (send-request :MESSAGE :pack (xml content) :to (sip-uri "192.168.1.2") :at (sip-uri ("192.168.1.3")))))
+    (send-request! :MESSAGE :pack (xml content) :to (sip-uri "192.168.1.2"))))

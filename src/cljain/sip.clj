@@ -1,131 +1,84 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.sip
-  (:use cljain.core
-        cljain.util
+  (:use cljain.util
         [clojure.string :only [upper-case]])
-  (:require [cljain.header :as header]
+  (:require [cljain.core :as core]
+            [cljain.header :as header]
             [cljain.address :as addr]
-            [cljain.message :as msg])
-  (:import [java.util Properties]
-           [javax.sip SipStack SipProvider ClientTransaction ServerTransaction Dialog ListeningPoint]
-           [javax.sip.address URI Address]
-           [javax.sip.message Request]
-           [javax.sip.header FromHeader]))
-
-(defn start!
-  "place doc string here"
-  {:added "0.2.0"}
-  [ctx-name host & options]
-  {:pre [(even? (count options))]}
-  (let [opts (apply hash-map options)
-        ctx (create-ctx ctx-name host opts)]
-    (.start (:stack ctx))
-    (store-ctx! ctx-name ctx)))
-
-(defn stop!
-  "place doc string here"
-  {:added "0.2.0"}
-  [ctx-name]
-  (let [ctx (pick-ctx! ctx-name)]
-    (and ctx (.stop (:stack ctx)))))
-
-(defn running?
-  "place doc string here"
-  {:added "0.2.0"}
-  [ctx-name]
-  (not (nil? (get-ctx ctx-name))))
-
-(defn reset-options!
-  "特别注意，当部分选项设置失败时，已经成功设置的选项不会回退."
-  {:added "0.2.0"}
-  [ctx-name key val & kvs]
-  {:pre [(contains? #{:user :domain :display-name :request-handler} key)]}
-  (alter-ctx-content! ctx-name key #(first %2) val)
-  (when kvs (recur ctx-name (first kvs) (second kvs) (nnext kvs))))
-
-(defn listening-point
-  "place doc string here"
-  {:added "0.2.0"}
-  [ctx-name]
-  (get-ctx-content ctx-name :listening-point))
-
-(defn client-trans
-  "place doc string here"
-  {:added "0.2.0"}
-  [ctx-name request]
-  (let [provider (get-ctx-content ctx-name :provider)]
-    (.getNewClientTransaction provider request)))
-
-(defn server-trans
-  "place doc string here"
-  {:added "0.2.0"}
-  [ctx-name request]
-  (let [provider (get-ctx-content ctx-name :provider)]
-    (.getNewServerTransaction provider request)))
-;
-;(defn send-request
-;  "place doc string here"
-;  {:added "0.2.0"}
-;  [trans & evt-handlers]
-;  {:pre [(even? (count evt-handlers))]}
-;  (let [trans-id (.getBranchId trans)
-;        ctx-name (.getStackName (.getSIPStack trans))
-;        handlers (apply hash-map evt-handlers)]
-;    (.sendRequest trans)
-;    (alter-ctx-content! ctx-name :transactions
-;      #(assoc-in %1 (first %2) (second %2)) [trans-id :evt-handler] handlers)))
-;
-;(defn send-response
-;  "place doc string here"
-;  {:added "0.2.0"}
-;  [trans rsp]
-;  (.sendResponse trans rsp))
+            [cljain.message :as msg]))
 
 (def ^{:doc "Before call any function expect 'provider' in the sip namespace,
             please binding *sip-provider* with the current provider object first."
        :added "0.2.0"
-       :private false
        :dynamic true}
   *sip-provider*)
 
 (def ^{:doc "place doc string here"
        :added "0.2.0"
-       :private true}
+       :dynamic true}
   account-map (atom {}))
 
 (defn account
-  "place doc string here"
+  "Get current bound account information."
   {:added "0.2.0"}
   []
-  (get @account-map (.. *sip-provider* (getSipStack) (getStackName))))
+  (get @account-map (core/stack-name *sip-provider*)))
 
-(defn provider
-  "place doc string here"
+(defn listening-point
+  "Get the current bound listening ip, port and transport information."
   {:added "0.2.0"}
-  [name host & options]
+  ([] (core/listening-point *sip-provider*))
+  ([transport] (core/listening-point *sip-provider* transport)))
+
+(defn provider!
+  "Create a new sip provider with a meaningful name and a local IP address.
+  Becareful, the name must be unique to make a distinction between other provider."
+  {:added "0.2.0"}
+  [name ip & options]
   {:pre [(even? (count options))
          (check-optional options :port > 0)
          (check-optional options :transport :by upper-case in? ["TCP" "UDP"])
-         (check-optional options :user string?)
-         (check-optional options :domain string?)
-         (check-optional options :display-name string?)
-         (check-optional options :request-handler fn?)
-         (check-optional options :out-proxy legal-proxy-address?)]}
-  (let [{:keys [port transport user domain display-name request-handler out-proxy]} (apply hash-map options)
-        properties      (doto (Properties.)
-                          (.setProperty "javax.sip.STACK_NAME" name)
-                          (#(when out-proxy (.setProperty % "javax.sip.OUTBOUND_PROXY" out-proxy))))
-        stack           (.createSipStack sip-factory properties)
-        port            (or port 5060)
-        transport       (or transport "UDP")
-        listening-point (.createListeningPoint stack host port transport)
-        provider        (doto (.createSipProvider stack listening-point)
-                          (.addSipListener (create-listener name)))]
-    (swap! account-map assoc name {:user user, :domain domain, :display-name display-name})
+         (check-optional options :on-request fn?)
+         (check-optional options :on-io-exception fn?)
+         (check-optional options :outbound-proxy core/legal-proxy-address?)]}
+  (let [{:keys [port transport on-request on-io-exception outbound-proxy]} (apply hash-map options)
+        port      (or port 5060)
+        transport (or transport "UDP")
+        provider  (if (nil? outbound-proxy)
+                    (core/sip-provider! name ip port transport)
+                    (core/sip-provider! name ip port transport :outbound-proxy outbound-proxy))]
+    (core/add-listener! provider on-request on-io-exception)
     provider))
 
-(defn send-request
+(defn start!
+  "Start to run with the current bound provider."
+  {:added "0.2.0"}
+  [& account-info]
+  {:pre [(even? (count account-info))
+         (check-optional account-info :user string?)
+         (check-optional account-info :domain string?)
+         (check-optional account-info :display-name string?)]}
+  (let [{:keys [user domain display-name]} (apply hash-map account-info)
+        stack-name (core/stack-name *sip-provider*)]
+    (core/start! *sip-provider*)
+    (swap! account-map assoc stack-name {:user user, :domain domain, :display-name display-name})))
+
+(defn stop!
+  "Stop to run with the current bound provider."
+  {:added "0.2.0"}
+  []
+  (let [stack-name (core/stack-name *sip-provider*)]
+    (swap! account-map dissoc stack-name)
+    (core/stop! *sip-provider*)))
+
+(defn running?
+  "Check whether the current bound provider is running."
+  {:added "0.2.0"}
+  []
+  (contains? account-map (core/stack-name *sip-provider*)))
+
+(defn send-request!
   "place doc string here"
   {:added "0.2.0"}
   [message & options]
@@ -135,30 +88,37 @@
                                           (contains? % :content-sub-type)
                                           (contains? % :content-length)
                                           (contains? % :content)))
-         (check-required options :to #(instance? Address %))
-         (check-optional options :from #(instance? Address %))
+         (check-required options :to addr/address?)
+         (check-optional options :from addr/address?)
          (check-optional options :use-endpoint :by upper-case in? ["UDP" "TCP"])
-         (check-optional options :in #(or (in? % [:new-transaction :new-dialog]) (instance? Dialog %)))
+         (check-optional options :in #(or (in? % [:new-transaction :new-dialog]) (core/dialog? %)))
+         (check-optional options :more-headers vector?)
          (check-optional options :on-response fn?)
          (check-optional options :on-timeout fn?)
          (check-optional options :on-transaction-terminated fn?)]}
-  (let [{:keys [pack to from use-endpoint in on-response on-timeout on-transaction-terminated]} (apply hash-map options)
+  (let [{:keys [pack to from use-endpoint in more-headers
+                on-response on-timeout on-transaction-terminated]} (apply hash-map options)
         {:keys [user domain display-name]} (account)
-        method          (str message)
+        {:keys [ip port transport]} (if (nil? use-endpoint)
+                                      (listening-point)
+                                      (listening-point use-endpoint))
+        domain          (or domain ip)
+        method          (upper-case (name message))
+        request-uri     (addr/uri-from-address to)
         from-header     (if (nil? from)
                           (header/from (addr/address (addr/sip-uri domain :user user) display-name) (header/gen-tag))
                           (header/from from (header/gen-tag)))
-        to-header       (if (= method Request/REGISTER) ; for REGISTER, To header's uri should equal the From header's.
-                          (header/to (.getAddress from-header) nil) ; out of dialog, do not need tag
+        to-header       (if (= method "REGISTER") ; for REGISTER, To header's uri should equal the From header's.
+                          (header/to (header/get-address from-header) nil) ; out of dialog, do not need tag
                           (header/to to nil)) ; TODO i don't know if need to pick the tag from exist dialog, try later.
-        contact-header  (let [endpoint  (if (nil? use-endpoint)
-                                          (.getListeningPoint *sip-provider*)
-                                          (.getListeningPoint *sip-provider* use-endpoint))]
-                          (header/contact (addr/sip-uri (.getIPAddress endpoint) :port (.getPort endpoint)
-                                            :transport (.getTransport endpoint) :user user)))
-        call-id-header  (.getCallId *sip-provider*)
-        request         (doto (msg/request method (.getURI to) from-header call-id-header to-header contact-header))]
-    (.sendRequest *sip-provider* )))
+        contact-header  (header/contact (addr/address (addr/sip-uri ip :port port :transport transport :user user)))
+        call-id-header  (core/gen-call-id-header *sip-provider*)
+        via-header      (header/via ip port transport (header/gen-branch))
+        request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header)]
+    (doseq [header more-headers]
+      (msg/add-header! request header))
+    (core/send-request! *sip-provider* request)
+    request))
 
 ;; 重构思路
 ;; (binding [*sip-provider*]
