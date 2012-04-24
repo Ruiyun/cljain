@@ -79,15 +79,20 @@
   (contains? account-map (core/stack-name *sip-provider*)))
 
 (defn send-request!
-  "place doc string here"
+  "Fluent style sip message send function.
+
+  The simplest example just send a trivial MESSAGE:
+  (send-request! \"MESSAGE\" :to (address (uri \"192.168.1.128\"))
+
+  More complicate example:
+  (let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")
+       [alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]
+    (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice
+      :use-endpoint \"UDP\" :in :new-transaction :on-response #(prn %))"
   {:added "0.2.0"}
   [message & options]
   {:pre [(even? (count options))
-         (check-optional options :pack #(and (map? %)
-                                          (contains? % :content-type)
-                                          (contains? % :content-sub-type)
-                                          (contains? % :content-length)
-                                          (contains? % :content)))
+         (check-optional options :pack core/legal-content?)
          (check-required options :to addr/address?)
          (check-optional options :from addr/address?)
          (check-optional options :use-endpoint :by upper-case in? ["UDP" "TCP"])

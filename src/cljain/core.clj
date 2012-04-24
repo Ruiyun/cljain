@@ -14,11 +14,19 @@
   sip-factory (doto (SipFactory/getInstance) (.setPathName "gov.nist")))
 
 (defn legal-proxy-address?
-  "判断地址格式是否合法，如合法，返回非空集合，否则返回nil."
+  "Check whether the format of outbound proxy address is legal."
   {:added "0.2.0"}
   [address]
   (let [re #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$"]
     (re-find re address)))
+
+(defn legal-content?
+  "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
+  {:added "0.2.0"}
+  [content]
+  (or (string? content)
+    (and (map? content)
+      (= (sort [:type :sub-type :length :content]) (sort (keys content))))))
 
 (defn create-listener
   "place doc string here"
