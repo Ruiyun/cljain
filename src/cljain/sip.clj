@@ -6,13 +6,21 @@
   (:require [cljain.core :as core]
             [cljain.header :as header]
             [cljain.address :as addr]
-            [cljain.message :as msg]))
+            [cljain.message :as msg]
+            [cljain.dialog :as dlg]))
 
-(def ^{:doc "Before call any function expect 'provider' in the sip namespace,
-            please binding *sip-provider* with the current provider object first."
-       :added "0.2.0"
-       :dynamic true}
-  *sip-provider*)
+(defn process-request
+  "place doc string here"
+  {:added "0.2.0"}
+  [process-out-dialog-request evt]
+  (when (nil? (.getServerTransaction evt))
+    (let [dialog (.getDialog evt)
+          request (.getRequest evt)
+          transaction (.getNewServerTransaction evt)]
+      (if (nil? dialog)
+        (process-out-dialog-request request transaction)
+        (let [process-in-dialog-request (:on-request (.getApplicationData dialog))]
+          (and process-in-dialog-request (process-in-dialog-request request dialog transaction)))))))
 
 (def ^{:doc "place doc string here"
        :added "0.2.0"
@@ -23,41 +31,7 @@
   "Get current bound account information."
   {:added "0.2.0"}
   []
-  (get @account-map (core/stack-name *sip-provider*)))
-
-(defn listening-point
-  "Get the current bound listening ip, port and transport information."
-  {:added "0.2.0"}
-  ([] (core/listening-point *sip-provider*))
-  ([transport] (core/listening-point *sip-provider* transport)))
-
-
-(defn legal-proxy-address?
-  "Check whether the format of outbound proxy address is legal."
-  {:added "0.2.0"}
-  [address]
-  (let [re #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$"]
-    (re-find re address)))
-
-(defn provider!
-  "Create a new sip provider with a meaningful name and a local IP address.
-  Becareful, the name must be unique to make a distinction between other provider."
-  {:added "0.2.0"}
-  [name ip & options]
-  {:pre [(even? (count options))
-         (check-optional options :port > 0)
-         (check-optional options :transport :by upper-case in? ["TCP" "UDP"])
-         (check-optional options :on-request fn?)
-         (check-optional options :on-io-exception fn?)
-         (check-optional options :outbound-proxy legal-proxy-address?)]}
-  (let [{:keys [port transport on-request on-io-exception outbound-proxy]} (apply hash-map options)
-        port      (or port 5060)
-        transport (or transport "UDP")
-        provider  (if (nil? outbound-proxy)
-                    (core/sip-provider! name ip port transport)
-                    (core/sip-provider! name ip port transport :outbound-proxy outbound-proxy))]
-    (core/add-listener! provider on-request on-io-exception)
-    provider))
+  (get @account-map (core/stack-name)))
 
 (defn start!
   "Start to run with the current bound provider."
@@ -67,24 +41,22 @@
          (check-optional account-info :user string?)
          (check-optional account-info :domain string?)
          (check-optional account-info :display-name string?)]}
-  (let [{:keys [user domain display-name]} (apply hash-map account-info)
-        stack-name (core/stack-name *sip-provider*)]
-    (core/start! *sip-provider*)
-    (swap! account-map assoc stack-name {:user user, :domain domain, :display-name display-name})))
+  (let [{:keys [user domain display-name]} (apply hash-map account-info)]
+    (core/start!)
+    (swap! account-map assoc (core/stack-name) {:user user, :domain domain, :display-name display-name})))
 
-(defn stop!
+(defn stop-and-release!
   "Stop to run with the current bound provider."
   {:added "0.2.0"}
   []
-  (let [stack-name (core/stack-name *sip-provider*)]
-    (swap! account-map dissoc stack-name)
-    (core/stop! *sip-provider*)))
+  (swap! account-map dissoc (core/stack-name))
+  (core/stop-and-release!))
 
 (defn running?
   "Check whether the current bound provider is running."
   {:added "0.2.0"}
   []
-  (contains? account-map (core/stack-name *sip-provider*)))
+  (contains? account-map (core/stack-name)))
 
 (defn legal-content?
   "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
@@ -118,7 +90,7 @@
          (check-required options :to addr/address?)
          (check-optional options :from addr/address?)
          (check-optional options :use-endpoint :by upper-case in? ["UDP" "TCP"])
-         (check-optional options :in #(or (in? % [:new-transaction :new-dialog]) (core/dialog? %)))
+         (check-optional options :in #(or (in? % [:new-dialog]) (dlg/dialog? %)))
          (check-optional options :more-headers vector?)
          (check-optional options :on-response fn?)
          (check-optional options :on-timeout fn?)
@@ -127,8 +99,8 @@
                 on-response on-timeout on-transaction-terminated]} (apply hash-map options)
         {:keys [user domain display-name]} (account)
         {:keys [ip port transport]} (if (nil? use-endpoint)
-                                      (listening-point)
-                                      (listening-point use-endpoint))
+                                      (core/listening-point)
+                                      (core/listening-point use-endpoint))
         domain          (or domain ip)
         method          (upper-case (name message))
         request-uri     (addr/uri-from-address to)
@@ -139,7 +111,7 @@
                           (header/to (header/get-address from-header) nil) ; out of dialog, do not need tag
                           (header/to to nil)) ; TODO i don't know if need to pick the tag from exist dialog, try later.
         contact-header  (header/contact (addr/address (addr/sip-uri ip :port port :transport transport :user user)))
-        call-id-header  (core/gen-call-id-header *sip-provider*)
+        call-id-header  (core/gen-call-id-header)
         via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
         request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header
                           more-headers)]
@@ -147,7 +119,7 @@
       (string? pack) (msg/set-content request (header/content-type "text" "plain") pack)
       (map? pack) (msg/set-content request (header/content-type (name (:type pack)) (name (:sub-type pack)))
                     (:content pack)))
-    (core/send-request! *sip-provider* request)
+    (core/send-request! request)
     request))
 
 ;; 重构思路

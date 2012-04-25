@@ -14,58 +14,39 @@
        :added "0.2.0"}
   sip-factory (doto (SipFactory/getInstance) (.setPathName "gov.nist")))
 
-(defn process-request
-  "place doc string here"
-  {:added "0.2.0"}
-  [process-out-dialog-request evt]
-  (when (nil? (.getServerTransaction evt))
-    (let [dialog (.getDialog evt)
-          request (.getRequest evt)
-          transaction (.getNewServerTransaction evt)]
-      (if (nil? dialog)
-        (process-out-dialog-request request transaction)
-        (let [process-in-dialog-request (:on-request (.getApplicationData dialog))]
-          (and process-in-dialog-request (process-in-dialog-request request dialog transaction)))))))
-
-(defn create-listener
-  "place doc string here"
-  {:added "0.2.0"}
-  [provider on-request on-io-exception]
-  )
-
-(defn dialog?
-  "Check the obj is an instance of javax.sip.Dialog"
-  {:added "0.2.0"}
-  [obj]
-  (instance? Dialog obj))
+(def ^{:doc "Before call any function expect 'sip-provider!' in the cljain.core namespace,
+            please binding *sip-provider* with the current provider object first."
+       :added "0.2.0"
+       :dynamic true}
+  *sip-provider*)
 
 (defn sip-stack
   "Get the SipStack object from a SipProvider object."
   {:added "0.2.0"}
-  [provider]
-  (.getSipStack provider))
+  []
+  (.getSipStack *sip-provider*))
 
 (defn stack-name
   "Get the SipStack name from a SipProvider object."
   {:added "0.2.0"}
-  [provider]
-  (.getStackName (sip-stack provider)))
+  []
+  (.getStackName (sip-stack)))
 
 (defn- map-listening-point
   "Get the ip, port, and transport from a ListeningPoint object, then pack them as a map."
   {:added "0.2.0"}
-  [listening-poing]
-  (let [lp (bean listening-poing)]
-    {:ip (:IPAddress lp), :port (:port lp), :transport (:transport lp)}))
+  [lp]
+  {:ip (.getIPAddress lp) :port (.getPort lp) :transport (.getTransport lp)})
 
 (defn listening-point
   "Get the current bound listening ip, port and transport information."
   {:added "0.2.0"}
-  ([provider] (map-listening-point (.getListeningPoint provider)))
-  ([provider transport] (map-listening-point (.getListeningPoint provider transport))))
+  ([] (map-listening-point (.getListeningPoint *sip-provider*)))
+  ([transport] (map-listening-point (.getListeningPoint *sip-provider* transport))))
 
 (defn sip-provider!
-  "Create a new SipProvider with stack name, listening point information and other optional SipStack properties.
+  "Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.
+  Rember, the name must be unique to make a distinction between other provider.
   To set standard SipStack properties, use the property's lowcase short name as keyword.
   If want to set the nist define property, let property keys lead with 'nist'.
 
@@ -76,11 +57,11 @@
   and
   http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html"
   {:added "0.2.0"}
-  [stack-name ip port transport & more-stack-properties]
-  (let [props (Properties.)
-        more-props (apply hash-map more-stack-properties)
-        _ (prn more-props)]
-    (.setProperty props "javax.sip.STACK_NAME" stack-name)
+  [name ip port transport & properties]
+  {:pre [(check-optional properties :outbound-proxy #(re-find #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$" %))]}
+  (let [more-props (apply array-map properties)
+        props (Properties.)]
+    (.setProperty props "javax.sip.STACK_NAME" name)
     (doseq [prop more-props]
       (let [prop-name (upper-case (.replace (name (first prop)) \- \_))
             prop-name (if (.startsWith prop-name "nist")
@@ -92,17 +73,19 @@
       (.createSipProvider sip-stack listening-point))))
 
 (defn- trans-from-event
-  "place doc string here"
+  "Get ServerTransaction or ClientTransaction from an event object."
   {:added "0.2.0"}
   [event]
   (if (.isServerTransaction event)
     (.getServerTransaction event)
     (.getClientTransaction event)))
 
-(defn add-listener!
-  "place doc string here"
+(defn set-listener!
+  "Set several event listening function to current bound provider.
+  Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
+  an exception will be thrown."
   {:added "0.2.0"}
-  [provider & processors]
+  [& processors]
   {:pre [(even? (count processors))
          (check-optional processors :request fn?)
          (check-optional processors :response fn?)
@@ -110,58 +93,60 @@
          (check-optional processors :io-exception fn?)
          (check-optional processors :transaction-terminated fn?)
          (check-optional processors :dialog-terminated fn?)]}
-  (.addSipListener provider
+  (.addSipListener *sip-provider*
     (let [{:keys [request response timeout io-exception
                   transaction-terminated dialog-terminated]} (apply array-map processors)]
       (reify SipListener
         (processRequest [this event]
           (log/trace "processRequest has been invoked." (bean event))
-          (and request (request provider {:request (.getRequest event)
-                                          :server-transaction (.getServerTransaction event)
-                                          :dialog (.getDialog event)})))
+          (and request (request {:request (.getRequest event)
+                                 :server-transaction (.getServerTransaction event)
+                                 :dialog (.getDialog event)})))
         (processResponse [this event]
           (log/trace "processResponse has been invoked." (bean event))
-          (and response (response provider {:response (.getResponse event)
-                                            :client-transaction (.getClientTransaction event)
-                                            :dialog (.getDialog event)})))
+          (and response (response {:response (.getResponse event)
+                                   :client-transaction (.getClientTransaction event)
+                                   :dialog (.getDialog event)})))
         (processIOException [this event]
           (log/trace "processIOException has been invoked." (bean event))
-          (and io-exception (io-exception provider {:host (.getHost event)
-                                                    :port (.getPort event)
-                                                    :transport (.getTransport event)})))
+          (and io-exception (io-exception {:host (.getHost event)
+                                           :port (.getPort event)
+                                           :transport (.getTransport event)})))
         (processTimeout [this event]
           (log/trace "processTimeout has been invoked." (bean event))
           (if (= (.getTimeout event) Timeout/TRANSACTION)
-            (and timeout (timeout provider {:transaction (trans-from-event event)
-                                            :timeout (.. event (getTimeout) (getValue))}))
+            (and timeout (timeout {:transaction (trans-from-event event)
+                                   :timeout (.. event (getTimeout) (getValue))}))
             (log/warn "cljain doesn't support none transaction timeout.")))
         (processTransactionTerminated [this event]
           (log/trace "processTransactionTerminated has been invoked." (bean event))
-          (and transaction-terminated (transaction-terminated provider (trans-from-event event))))
+          (and transaction-terminated (transaction-terminated (trans-from-event event))))
         (processDialogTerminated [this event]
           (log/trace "processDialogTerminated has been invoked." (bean event))
-          (and dialog-terminated (dialog-terminated provider (.getDialog event))))))))
+          (and dialog-terminated (dialog-terminated (.getDialog event))))))))
 
 (defn start!
-  "Start to run the stack which bound with a provider."
+  "Start to run the stack which bound with current bound provider."
   {:added "0.2.0"}
-  [provider]
-  (.start (sip-stack provider)))
+  []
+  (.start (sip-stack)))
 
-(defn stop!
-  "Stop the stack wich bound with a provider."
+(defn stop-and-release!
+  "Stop the stack wich bound with current bound provider. And release all resource associated the stack.
+  Becareful, after called 'stop!' function, all other function include 'start!' will be invalid.
+  A new provider need be generated for later call."
   {:added "0.2.0"}
-  [provider]
-  (.stop (sip-stack provider)))
+  []
+  (.stop (sip-stack)))
 
 (defn gen-call-id-header
-  "Generate a new Call-ID header use a provider."
+  "Generate a new Call-ID header use current bound provider."
   {:added "0.2.0"}
-  [provider]
-  (.getNewCallId provider))
+  []
+  (.getNewCallId *sip-provider*))
 
 (defn send-request!
-  "place doc string here"
+  "Send out of dialog SipRequest use current bound provider."
   {:added "0.2.0"}
-  [provider request]
-  (.sendRequest provider request))
+  [request]
+  (.sendRequest *sip-provider* request))

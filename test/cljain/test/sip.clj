@@ -36,14 +36,15 @@
 
 (org.apache.log4j.PropertyConfigurator/configure "log4j.properties")
 
-(def provider (cljain.sip/provider! "test" "127.0.0.1" :on-request #(prn "Recieve request" %)))
+(def provider (cljain.core/sip-provider! "test" "127.0.0.1" 5060 "udp"))
 
-(binding [cljain.sip/*sip-provider* provider]
+(binding [cljain.core/*sip-provider* provider]
+  ;(cljain.core/set-listener! :request #(prn %))
   (cljain.sip/start! :user "reuiyun" :domain "notbook" :display-name "Ruiyun Wen"))
 
-(binding [cljain.sip/*sip-provider* provider]
+(binding [cljain.core/*sip-provider* provider]
   (let [bob (cljain.address/address (cljain.address/sip-uri "127.0.0.1" :port 5070 :user "bob") "Uncle Bob")]
     (cljain.sip/send-request! :MESSAGE :to bob :pack "Welcome" :on-response #(prn "Recieve response" %))))
 
-(binding [cljain.sip/*sip-provider* provider]
-  (cljain.sip/stop! ))
+(binding [cljain.core/*sip-provider* provider]
+  (cljain.sip/stop-and-release!))
