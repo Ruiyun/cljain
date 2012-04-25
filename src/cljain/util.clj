@@ -44,7 +44,3 @@
    :added "0.2.0"}
   [& decl]
   `(legal-option? false ~@decl))
-
-(defmacro expand-form-tail
-  [form & more]
-  `(~@form ~@more))

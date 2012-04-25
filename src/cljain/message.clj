@@ -17,7 +17,7 @@
   "place doc string here"
   {:added "0.2.0"}
   [method req-uri from call-id & more-headers]
-  (let [headers (apply hash-map (mapcat #(vector (.getName %) %) more-headers))
+  (let [headers (apply hash-map (mapcat #(vector (.getName %) %) (remove nil? (flatten more-headers))))
         c-seq (get headers "CSeq" (header/c-seq 1 method))
         to (get headers "To" (header/to (addr/address req-uri) nil))
         via [(get headers "Via")]
@@ -52,5 +52,11 @@
   {:added "0.2.0"}
   [^Message message, header-name]
   (.removeHeader message header-name))
+
+(defn set-content
+  "place doc string here"
+  {:added "0.2.0"}
+  [request type-header content]
+  (.setContent request content type-header))
 
 

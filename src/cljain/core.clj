@@ -1,7 +1,8 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.core
-  (:use [clojure.string :only [upper-case lower-case]])
+  (:use cljain.util
+        [clojure.string :only [upper-case lower-case]])
   (:require [clojure.tools.logging :as log])
   (:import [java.util Properties]
            [javax.sip SipFactory SipStack SipProvider SipListener
@@ -13,46 +14,24 @@
        :added "0.2.0"}
   sip-factory (doto (SipFactory/getInstance) (.setPathName "gov.nist")))
 
-(defn legal-proxy-address?
-  "Check whether the format of outbound proxy address is legal."
+(defn process-request
+  "place doc string here"
   {:added "0.2.0"}
-  [address]
-  (let [re #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$"]
-    (re-find re address)))
-
-(defn legal-content?
-  "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
-  {:added "0.2.0"}
-  [content]
-  (or (string? content)
-    (and (map? content)
-      (= (sort [:type :sub-type :length :content]) (sort (keys content))))))
+  [process-out-dialog-request evt]
+  (when (nil? (.getServerTransaction evt))
+    (let [dialog (.getDialog evt)
+          request (.getRequest evt)
+          transaction (.getNewServerTransaction evt)]
+      (if (nil? dialog)
+        (process-out-dialog-request request transaction)
+        (let [process-in-dialog-request (:on-request (.getApplicationData dialog))]
+          (and process-in-dialog-request (process-in-dialog-request request dialog transaction)))))))
 
 (defn create-listener
   "place doc string here"
   {:added "0.2.0"}
-  [request-evt-handler io-exception-evt-handler]
-  (reify SipListener
-    (processRequest [this evt]
-      (log/trace "processRequest has been invoked.")
-      (request-evt-handler evt))
-    (processResponse [this evt]
-      (log/trace "processResponse has been invoked.")
-      )
-    (processIOException [this evt]
-      (log/trace "processIOException has been invoked.")
-      (io-exception-evt-handler evt))
-    (processTimeout [this evt]
-      (log/trace "processTimeout has been invoked.")
-      (if (= (.getTimeout evt) Timeout/TRANSACTION)
-        nil
-        (log/warn "cljain doesn't support none transaction timeout.")))
-    (processTransactionTerminated [this evt]
-      (log/trace "processTransactionTerminated has been invoked.")
-      )
-    (processDialogTerminated [this evt]
-      (log/trace "processDialogTerminated has been invoked.")
-      )))
+  [provider on-request on-io-exception]
+  )
 
 (defn dialog?
   "Check the obj is an instance of javax.sip.Dialog"
@@ -112,11 +91,56 @@
           listening-point (.createListeningPoint sip-stack ip port transport)]
       (.createSipProvider sip-stack listening-point))))
 
+(defn- trans-from-event
+  "place doc string here"
+  {:added "0.2.0"}
+  [event]
+  (if (.isServerTransaction event)
+    (.getServerTransaction event)
+    (.getClientTransaction event)))
+
 (defn add-listener!
   "place doc string here"
   {:added "0.2.0"}
-  [provider request-handler io-exception-handler]
-  (.addSipListener provider (create-listener request-handler io-exception-handler)))
+  [provider & processors]
+  {:pre [(even? (count processors))
+         (check-optional processors :request fn?)
+         (check-optional processors :response fn?)
+         (check-optional processors :timeout fn?)
+         (check-optional processors :io-exception fn?)
+         (check-optional processors :transaction-terminated fn?)
+         (check-optional processors :dialog-terminated fn?)]}
+  (.addSipListener provider
+    (let [{:keys [request response timeout io-exception
+                  transaction-terminated dialog-terminated]} (apply array-map processors)]
+      (reify SipListener
+        (processRequest [this event]
+          (log/trace "processRequest has been invoked." (bean event))
+          (and request (request provider {:request (.getRequest event)
+                                          :server-transaction (.getServerTransaction event)
+                                          :dialog (.getDialog event)})))
+        (processResponse [this event]
+          (log/trace "processResponse has been invoked." (bean event))
+          (and response (response provider {:response (.getResponse event)
+                                            :client-transaction (.getClientTransaction event)
+                                            :dialog (.getDialog event)})))
+        (processIOException [this event]
+          (log/trace "processIOException has been invoked." (bean event))
+          (and io-exception (io-exception provider {:host (.getHost event)
+                                                    :port (.getPort event)
+                                                    :transport (.getTransport event)})))
+        (processTimeout [this event]
+          (log/trace "processTimeout has been invoked." (bean event))
+          (if (= (.getTimeout event) Timeout/TRANSACTION)
+            (and timeout (timeout provider {:transaction (trans-from-event event)
+                                            :timeout (.. event (getTimeout) (getValue))}))
+            (log/warn "cljain doesn't support none transaction timeout.")))
+        (processTransactionTerminated [this event]
+          (log/trace "processTransactionTerminated has been invoked." (bean event))
+          (and transaction-terminated (transaction-terminated provider (trans-from-event event))))
+        (processDialogTerminated [this event]
+          (log/trace "processDialogTerminated has been invoked." (bean event))
+          (and dialog-terminated (dialog-terminated provider (.getDialog event))))))))
 
 (defn start!
   "Start to run the stack which bound with a provider."

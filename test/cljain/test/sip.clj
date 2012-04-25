@@ -28,3 +28,22 @@
             cljain.sip/account-map (atom {"test" {:user "bob" :domain "test.com" :display-name "Bob"}})]
     (let [content "<Books Catlog='IT'><Book><Name>Clojure in Action</Name></Book></Books>"])
     (send-request! :MESSAGE :pack (xml content) :to (sip-uri "192.168.1.2"))))
+
+;;---------------------------------------------------------------------------------------------
+
+(load-file "src/cljain/core.clj")
+(load-file "src/cljain/sip.clj")
+
+(org.apache.log4j.PropertyConfigurator/configure "log4j.properties")
+
+(def provider (cljain.sip/provider! "test" "127.0.0.1" :on-request #(prn "Recieve request" %)))
+
+(binding [cljain.sip/*sip-provider* provider]
+  (cljain.sip/start! :user "reuiyun" :domain "notbook" :display-name "Ruiyun Wen"))
+
+(binding [cljain.sip/*sip-provider* provider]
+  (let [bob (cljain.address/address (cljain.address/sip-uri "127.0.0.1" :port 5070 :user "bob") "Uncle Bob")]
+    (cljain.sip/send-request! :MESSAGE :to bob :pack "Welcome" :on-response #(prn "Recieve response" %))))
+
+(binding [cljain.sip/*sip-provider* provider]
+  (cljain.sip/stop! ))

@@ -31,6 +31,14 @@
   ([] (core/listening-point *sip-provider*))
   ([transport] (core/listening-point *sip-provider* transport)))
 
+
+(defn legal-proxy-address?
+  "Check whether the format of outbound proxy address is legal."
+  {:added "0.2.0"}
+  [address]
+  (let [re #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$"]
+    (re-find re address)))
+
 (defn provider!
   "Create a new sip provider with a meaningful name and a local IP address.
   Becareful, the name must be unique to make a distinction between other provider."
@@ -41,7 +49,7 @@
          (check-optional options :transport :by upper-case in? ["TCP" "UDP"])
          (check-optional options :on-request fn?)
          (check-optional options :on-io-exception fn?)
-         (check-optional options :outbound-proxy core/legal-proxy-address?)]}
+         (check-optional options :outbound-proxy legal-proxy-address?)]}
   (let [{:keys [port transport on-request on-io-exception outbound-proxy]} (apply hash-map options)
         port      (or port 5060)
         transport (or transport "UDP")
@@ -78,6 +86,14 @@
   []
   (contains? account-map (core/stack-name *sip-provider*)))
 
+(defn legal-content?
+  "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
+  {:added "0.2.0"}
+  [content]
+  (or (string? content)
+    (and (map? content)
+      (= (sort [:type :sub-type :content]) (sort (keys content))))))
+
 (defn send-request!
   "Fluent style sip message send function.
 
@@ -88,11 +104,17 @@
   (let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")
        [alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]
     (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice
-      :use-endpoint \"UDP\" :in :new-transaction :on-response #(prn %))"
+      :use-endpoint \"UDP\" :in :new-transaction :on-response #(prn %))
+
+  If the pack content is not just a trivial string, provide a well named funciont
+  to return a content map is recommended.
+  {:type \"application\"
+   :sub-type \"pidf-diff+xml\"
+   :content content-object}"
   {:added "0.2.0"}
   [message & options]
   {:pre [(even? (count options))
-         (check-optional options :pack core/legal-content?)
+         (check-optional options :pack legal-content?)
          (check-required options :to addr/address?)
          (check-optional options :from addr/address?)
          (check-optional options :use-endpoint :by upper-case in? ["UDP" "TCP"])
@@ -118,10 +140,13 @@
                           (header/to to nil)) ; TODO i don't know if need to pick the tag from exist dialog, try later.
         contact-header  (header/contact (addr/address (addr/sip-uri ip :port port :transport transport :user user)))
         call-id-header  (core/gen-call-id-header *sip-provider*)
-        via-header      (header/via ip port transport (header/gen-branch))
-        request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header)]
-    (doseq [header more-headers]
-      (msg/add-header! request header))
+        via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
+        request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header
+                          more-headers)]
+    (cond
+      (string? pack) (msg/set-content request (header/content-type "text" "plain") pack)
+      (map? pack) (msg/set-content request (header/content-type (name (:type pack)) (name (:sub-type pack)))
+                    (:content pack)))
     (core/send-request! *sip-provider* request)
     request))
 
