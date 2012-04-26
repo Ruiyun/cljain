@@ -1,13 +1,13 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
-  cljain.header
+  cljain.sip.header
   (:refer-clojure :exclude [replace reverse require])
-  (:use clojure.string
-        [cljain.core :only [sip-factory]])
-  (:import [javax.sip SipFactory]
-           [javax.sip.header HeaderFactory HeaderAddress]
-           [javax.sip.address Address URI]
-           [gov.nist.javax.sip Utils]))
+  (:use     clojure.string
+            [cljain.sip.core :only [sip-factory]])
+  (:import  [javax.sip SipFactory]
+            [javax.sip.header HeaderFactory HeaderAddress]
+            [javax.sip.address Address URI]
+            [gov.nist.javax.sip Utils]))
 
 (def ^{:doc "place doc string here"
        :added "0.2.0"

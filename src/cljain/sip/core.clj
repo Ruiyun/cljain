@@ -1,24 +1,30 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
-  cljain.core
-  (:use cljain.util
-        [clojure.string :only [upper-case lower-case]])
+  cljain.sip.core
+  (:use     cljain.util
+            [clojure.string :only [upper-case lower-case]])
   (:require [clojure.tools.logging :as log])
-  (:import [java.util Properties]
-           [javax.sip SipFactory SipStack SipProvider SipListener
-            Transaction ClientTransaction Dialog
-            ResponseEvent IOExceptionEvent TimeoutEvent Timeout
-            TransactionTerminatedEvent DialogTerminatedEvent]))
+  (:import  [java.util Properties]
+            [javax.sip SipFactory SipStack SipProvider SipListener
+             Transaction ClientTransaction Dialog
+             ResponseEvent IOExceptionEvent TimeoutEvent Timeout
+             TransactionTerminatedEvent DialogTerminatedEvent]))
 
 (def ^{:doc "The instance of JAIN-SIP SipFactory."
        :added "0.2.0"}
   sip-factory (doto (SipFactory/getInstance) (.setPathName "gov.nist")))
 
-(def ^{:doc "Before call any function expect 'sip-provider!' in the cljain.core namespace,
+(def ^{:doc "Before call any function expect 'sip-provider!' in the cljain.sip.core namespace,
             please binding *sip-provider* with the current provider object first."
        :added "0.2.0"
        :dynamic true}
   *sip-provider*)
+
+(defn already-bound-provider?
+  "Check whether the *sip-provider* has been bound in current thread."
+  {:added "0.2.0"}
+  []
+  (and (bound? #'*sip-provider*) (instance? SipProvider *sip-provider*)))
 
 (defn sip-stack
   "Get the SipStack object from a SipProvider object."
@@ -150,3 +156,23 @@
   {:added "0.2.0"}
   [request]
   (.sendRequest *sip-provider* request))
+
+(defn new-server-transaction!
+  "An application has the responsibility of deciding to respond to a Request
+  that does not match an existing server transaction."
+  {:added "0.2.0"}
+  [request]
+  (.getNewServerTransaction *sip-provider* request))
+
+(defn new-client-transcation!
+  "Before an application can send a new request it must first request
+  a new client transaction to handle that Request."
+  {:added "0.2.0"}
+  [request]
+  (.getNewClientTransaction *sip-provider* request))
+
+(defn new-dialog!
+  "Create a dialog for the given transaction."
+  {:added "0.2.0"}
+  [transaction]
+  (.getNewDialog *sip-provider* transaction))

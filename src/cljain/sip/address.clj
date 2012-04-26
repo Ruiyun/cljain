@@ -1,7 +1,7 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
-  cljain.address
-  (:use [cljain.core :only [sip-factory]])
+  cljain.sip.address
+  (:use [cljain.sip.core :only [sip-factory]])
   (:import [javax.sip SipFactory]
            [javax.sip.address AddressFactory URI SipURI Address]))
 
