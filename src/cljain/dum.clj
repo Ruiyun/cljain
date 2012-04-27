@@ -15,50 +15,45 @@
        :dynamic true}
   account-map (atom {}))
 
+(def ^{:doc "Store all the request handlers by 'def-request-handler'"
+       :added "0.2.0"
+       :private true}
+  request-handlers-map (atom {}))
+
 (defn account
   "Get current bound account information."
   {:added "0.2.0"}
   []
-  {:pre [(core/already-bound-provider?)]}
-  (get @account-map (core/stack-name)))
+  @account-map)
 
-(defn set-account-info!
-  "Set the default user account information with the current bound provider."
+(defn add-handler!
+  "Add a sip request received event handler to dum."
   {:added "0.2.0"}
-  [& account-info]
-  {:pre [(core/already-bound-provider?)
-         (even? (count account-info))
-         (check-optional account-info :user string?)
-         (check-optional account-info :domain string?)
-         (check-optional account-info :display-name string?)]}
-  (let [{:keys [user domain display-name]} (apply array-map account-info)]
-    (swap! account-map assoc (core/stack-name) {:user user, :domain domain, :display-name display-name})))
+  [method process-fn]
+  (let [method (keyword (upper-case (name method)))]
+    (swap! request-handlers-map assoc method process-fn)))
 
-(defn remove-account-info!
-  "remove user account information with the current bound provider."
-  {:added "0.2.0"}
-  []
-  {:pre [(core/already-bound-provider?)]}
-  (swap! account-map dissoc (core/stack-name)))
+(defmacro def-request-handler
+  "Define the handler to handle the sip request received from under layer.
 
-; TODO Do not user application data in transaction or dialog for event dispatch.
+  (def-request-handler :MESSAGE [request transaction dialog]
+    (do-somethin)
+    ...)"
+  {:arglists '([method [request transaction dialog] body*])
+   :added "0.2.0"}
+  [method args & body]
+  `(let [f# (fn [~@args] ~@body)]
+     (add-handler! ~method f#)))
 
 (defn- request-processor
   "Return a funcion to process request."
   {:added "0.2.0"}
-  [process-new-dialog process-out-of-dialog-request]
+  []
   (fn [{:keys [request server-transaction dialog]}]
-    (if (nil? dialog)
-      (let [server-transaction (or server-transaction (core/new-server-transaction! request))]
-        (if (= "INVITE" (msg/method request))
-          (let [dialog (core/new-dialog! server-transaction)]
-            (and process-new-dialog (process-new-dialog dialog request server-transaction)))
-          (and process-out-of-dialog-request (process-out-of-dialog-request request server-transaction))))
-      (let [{process-dialog-confirmed :on-confirmed
-             process-in-dialog-request :on-request} (dlg/application-data dialog)]
-        (if (= (msg/method request) "ACK")
-          (and process-dialog-confirmed (process-dialog-confirmed dialog request))
-          (and process-in-dialog-request (process-in-dialog-request request dialog server-transaction)))))))
+    (let [method (keyword (upper-case (name (msg/method request))))
+          process-fn (get @request-handlers-map method)
+          server-transaction (or server-transaction (core/new-server-transaction! request))]
+      (and process-fn (process-fn request server-transaction dialog)))))
 
 (defn- response-processor
   "Return a function to process response."
@@ -70,20 +65,45 @@
              process-failure :on-failure} (trans/application-data client-transaction)
             response-2xx? (= (quot (msg/status-code response) 100) 2)]
         (if response-2xx?
-          (and process-success (process-success client-transaction response))
-          (and process-failure (process-failure client-transaction response)))))))
+          (and process-success (process-success client-transaction dialog response))
+          (and process-failure (process-failure client-transaction dialog response)))))))
 
-(defn listener
-  "Construct a new dum listener with several application layer event handlers."
+(defn- timeout-processor
+  "Return a function to process transaction timeout event."
   {:added "0.2.0"}
-  [& event-handlers]
-  {:pre [(core/already-bound-provider?)
-         (even? (count event-handlers))
-         (check-optional event-handlers :new-dialog fn?)
-         (check-optional event-handlers :out-of-dialog-request fn?)]}
-  (let [{:keys [new-dialog out-of-dialog-request]} (apply array-map event-handlers)]
-    {:request (request-processor new-dialog out-of-dialog-request)
-     :response (response-processor)}))
+  []
+  (fn [{:keys [transaction]}]
+    (let [process-timeout (:on-timeout (trans/application-data transaction))]
+      (and process-timeout (process-timeout transaction)))))
+
+(defn- install-event-handler
+  "Install a new dum listener to under layer."
+  {:added "0.2.0"}
+  []
+  (core/set-listener!
+    :request (request-processor)
+    :response (response-processor)
+    :timeout (timeout-processor)))
+
+(defn initialize!
+  "Set the default user account information with the current bound provider."
+  {:added "0.2.0"}
+  [& account-info]
+  {:pre [(even? (count account-info))
+         (check-optional account-info :user string?)
+         (check-optional account-info :domain string?)
+         (check-optional account-info :display-name string?)]}
+  (let [{:keys [user domain display-name]} (apply array-map account-info)]
+    (reset! account-map {:user user, :domain domain, :display-name display-name}))
+  (install-event-handler))
+
+(defn finalize!
+  "Clean user account information with the current bound provider."
+  {:added "0.2.0"}
+  []
+  {:pre [(core/provider-can-be-found?)]}
+  (reset! account-map {})
+  (reset! request-handlers-map {}))
 
 (defn legal-content?
   "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
@@ -93,17 +113,32 @@
     (and (map? content)
       (= (sort [:type :sub-type :content]) (sort (keys content))))))
 
+
+(defn- try-set-content!
+  "Parse the :pack argument from 'send-request!' and 'send-response!',
+  then try to set the appropriate Content-Type header and content to the message."
+  {:added "0.2.0"}
+  [message content]
+  (when (not (nil? content))
+    (let [content-type        (name (or (:type content) "text"))
+          content-sub-type    (name (or (:sub-type content) "plain"))
+          content-type-header (header/content-type content-type content-sub-type)]
+      (msg/set-content! message content-type-header content))))
+
+; TODO Do not user application data in transaction or dialog for event dispatch.
+
 (defn send-request!
   "Fluent style sip message send function.
 
   The simplest example just send a trivial MESSAGE:
-  (send-request! \"MESSAGE\" :to (address (uri \"192.168.1.128\"))
+  (send-request! :MESSAGE :to (address (uri \"192.168.1.128\"))
+  (send-request! :INFO :in dialog-with-bob)
 
   More complicate example:
   (let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")
         alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]
     (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice
-      :use \"UDP\" :in :new-transaction :on-success #(prn %) :on-failure #(prn %)))
+      :use \"UDP\" :on-success #(prn %) :on-failure #(prn %) :on-timeout #(prn %)))
 
   If the pack content is not just a trivial string, provide a well named funciont
   to return a content map is recommended.
@@ -112,38 +147,36 @@
    :content content-object}"
   {:added "0.2.0"}
   [message & options]
-  {:pre [(core/already-bound-provider?)
+  {:pre [(core/provider-can-be-found?)
          (even? (count options))
          (check-optional options :pack legal-content?)
          (check-optional options :to addr/address?)
          (check-optional options :from addr/address?)
          (check-optional options :use :by upper-case in? ["UDP" "TCP"])
-         (check-optional options :in #(or (= :new-dialog %) (dlg/dialog? %)))
+         (check-optional options :in dlg/dialog?)
          (check-optional options :more-headers vector?)
          (check-optional options :on-success fn?)
          (check-optional options :on-failure fn?)
-         (check-optional options :on-request #(and (in? :new-dialog options) (fn? %)))
-         (check-optional options :on-terminated #(and (in? :new-dialog options) (fn? %)))]}
+         (check-optional options :on-timeout fn?)]}
   (let [{content :pack
          to-address :to
          from-address :from
          transport :use
-         context :in
+         dialog :in
          more-headers :more-headers
          on-success :on-success
          on-failure :on-failure
-         on-request :on-request
-         on-terminated :on-terminated} (apply array-map options)
+         on-timeout :on-request} (apply array-map options)
         {:keys [user domain display-name]} (account)
         {:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
                                       (core/listening-point transport))
         domain  (or domain ip)
         method  (upper-case (name message))]
-    (if (dlg/dialog? context)
-      (let [request (dlg/create-request context method)
+    (if (not (nil? dialog))
+      (let [request (dlg/create-request dialog method)
             transaction (core/new-client-transcation! request)]
-        (dlg/send-request! context transaction)
+        (dlg/send-request! dialog transaction)
         request)
       (let [request-uri     (if (nil? to-address)
                               (throw (IllegalArgumentException. "Require the ':to' option for send an out of dialog request."))
@@ -158,14 +191,28 @@
             via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
             request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header more-headers)
             transaction     (core/new-client-transcation! request)]
-        (trans/set-application-data! transaction {:on-success on-success, :on-failure on-failure})
-        (let [content-type        (or (:type content) "text")
-              content-sub-type    (or (:sub-type content) "plain")
-              content-type-header (header/content-type content-type content-sub-type)
-              content             (or (:content content) content)]
-          (msg/set-content! request content-type-header content))
-        (if (= context :new-dialog)
-          (let [dialog (core/new-dialog! transaction)]
-            (dlg/set-application-data dialog {:on-request on-request, :on-terminated on-terminated}))
-          (trans/send-request! transaction))
+        (trans/set-application-data! transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
+        (try-set-content! request content)
+        (trans/send-request! transaction)
         request))))
+
+
+(defn send-response!
+  "Send response with stored server transactions."
+  {:added "0.2.0"}
+  [status-code transaction & options]
+  {:pre [(core/provider-can-be-found?)
+         (even? (count options))
+         (check-optional options :pack legal-content?)
+         (check-optional options :use :by upper-case in? ["UDP" "TCP"])
+         (check-optional options :more-headers vector?)]}
+  (let [{content :pack, transport :use, more-headers :more-headers} (apply array-map options)
+        {:keys [ip port transport]} (if (nil? transport)
+                                      (core/listening-point)
+                                      (core/listening-point transport))
+        user            (:user (account))
+        contact-header  (header/contact (addr/address (addr/sip-uri ip :port port :transport transport :user user)))
+        request         (trans/request transaction)
+        response        (msg/response status-code request contact-header more-headers)]
+    (try-set-content! response content)
+    (trans/send-response! transaction response)))

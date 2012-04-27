@@ -32,3 +32,20 @@
   {:added "0.2.0"}
   [dialog transaction]
   (.sendRequest dialog transaction))
+
+(defn ack!
+  "Creates an ACK request for an Invite that was responded with 2xx response.
+  The cseq number for the invite is supplied to relate the ACK to its original invite request."
+  {:added "0.2.0"}
+  [dialog seq-num]
+  (try
+    (.createAck dialog seq-num)))
+
+(defn send-ack!
+  "Sends ACK Request to the remote party of this dialog.
+  This method implies that the application is functioning as User Agent Client
+  hence the underlying SipProvider acts statefully.
+  This method does not increment the local sequence number."
+  {:added "0.2.0"}
+  [dialog ack]
+  (.sendAck dialog ack))

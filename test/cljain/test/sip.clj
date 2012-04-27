@@ -36,15 +36,15 @@
 
 (org.apache.log4j.PropertyConfigurator/configure "log4j.properties")
 
-(def provider (cljain.sip.core/sip-provider! "test" "127.0.0.1" 5060 "udp"))
+(cljain.sip (cljain.sip.core/sip-provider! "test" "127.0.0.1" 5060 "udp"))
 
 (binding [cljain.sip.core/*sip-provider* provider]
   (cljain.dum/set-account-info! :user "reuiyun" :domain "notbook" :display-name "Ruiyun Wen")
-  (cljain.sip.core/set-listener!
-    (cljain.dum/listener
-      :out-of-dialog-request #(prn "out-of-dialog-request worked" %1 %2)
-      :new-dialog #(prn "new-dialog worked" %1 %2 %3)))
-  (cljain.sip.core/start!))
+  (let [listener (cljain.dum/listener :out-of-dialog-request #(prn "out-of-dialog-request worked" %1 %2)
+                    :new-dialog #(prn "new-dialog worked" %1 %2 %3))
+        _ (prn listener)]
+    (cljain.sip.core/set-listener-map! listener)
+    (cljain.sip.core/start!)))
 
 (binding [cljain.core/*sip-provider* provider]
   (let [bob (cljain.address/address (cljain.address/sip-uri "127.0.0.1" :port 5070 :user "bob") "Uncle Bob")]

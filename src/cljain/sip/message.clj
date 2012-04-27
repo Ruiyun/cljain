@@ -35,8 +35,13 @@
   based on a specific Request message. This new Response does not contain a body.
   Only the required headers are copied from the Request."
   {:added "0.2.0"}
-  [status-code, ^Request reqest]
-  (.createResponse factory status-code reqest))
+  [status-code, ^Request reqest & more-headers]
+  {:pre [(let [headers (remove nil? (flatten more-headers))]
+           (or (= 0 (count headers)) (every? header/header? headers)))]}
+  (let [response (.createResponse factory status-code reqest)
+        headers (remove nil? (flatten more-headers))]
+    (doseq [h headers] (.setHeader response h))
+    response))
 
 (defn header
   "Gets the Header of the specified name in this Message.
@@ -85,8 +90,8 @@
   If no Header of this type exists this header is added to the end of the SIP Message.
   This method should be used to change required Headers and overwrite optional Headers."
   {:added "0.2.0"}
-  [request type-header content]
-  (.setContent request content type-header))
+  [message type-header content]
+  (.setContent message content type-header))
 
 (defn method
   "Gets method string of this Request message."

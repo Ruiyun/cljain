@@ -5,7 +5,7 @@
   (:use     clojure.string
             [cljain.sip.core :only [sip-factory]])
   (:import  [javax.sip SipFactory]
-            [javax.sip.header HeaderFactory HeaderAddress]
+            [javax.sip.header HeaderFactory HeaderAddress Header]
             [javax.sip.address Address URI]
             [gov.nist.javax.sip Utils]))
 
@@ -131,3 +131,9 @@
   {:added "0.2.0"}
   [^HeaderAddress header]
   (.getAddress header))
+
+(defn header?
+  "Check whether the object is a Header or not"
+  {:added "0.2.0"}
+  [object]
+  (instance? Header object))

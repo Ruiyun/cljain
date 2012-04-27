@@ -2,7 +2,7 @@
       :author "ruiyun"}
   cljain.sip.core
   (:use     cljain.util
-            [clojure.string :only [upper-case lower-case]])
+            [clojure.string :only [upper-case lower-case capitalize split]])
   (:require [clojure.tools.logging :as log])
   (:import  [java.util Properties]
             [javax.sip SipFactory SipStack SipProvider SipListener
@@ -20,17 +20,48 @@
        :dynamic true}
   *sip-provider*)
 
+(def ^{:doc "Set by 'global-start!'"
+       :added "0.2.0"
+       :private true}
+  global-sip-provider (atom nil))
+
+(defn global-bind-sip-provider!
+  "Bind the sip-provider in global scope."
+  {:added "0.2.0"}
+  [provider]
+  (reset! global-sip-provider provider))
+
+(defn global-unbind-sip-provider!
+  "Unbind the sip-provider in global scope."
+  {:added "0.2.0"}
+  []
+  (reset! global-sip-provider nil))
+
 (defn already-bound-provider?
   "Check whether the *sip-provider* has been bound in current thread."
   {:added "0.2.0"}
   []
   (and (bound? #'*sip-provider*) (instance? SipProvider *sip-provider*)))
 
+(defn provider-can-be-found?
+  "Check where the *sip-provider* has been bound or global sip-provider has been set."
+  {:added "0.2.0"}
+  []
+  (or (already-bound-provider?) (not (nil? @global-sip-provider))))
+
+(defn sip-provider
+  "Get the current bound *sip-provider* or global-sip-provider."
+  {:added "0.2.0"}
+  []
+  (if (already-bound-provider?)
+    *sip-provider*
+    (or @global-sip-provider (throw (RuntimeException. "The 'cljain.sip.core/*sip-provider*' should be bound.")))))
+
 (defn sip-stack
   "Get the SipStack object from a SipProvider object."
   {:added "0.2.0"}
   []
-  (.getSipStack *sip-provider*))
+  (.getSipStack (sip-provider)))
 
 (defn stack-name
   "Get the SipStack name from a SipProvider object."
@@ -47,8 +78,8 @@
 (defn listening-point
   "Get the current bound listening ip, port and transport information."
   {:added "0.2.0"}
-  ([] (map-listening-point (.getListeningPoint *sip-provider*)))
-  ([transport] (map-listening-point (.getListeningPoint *sip-provider* transport))))
+  ([] (map-listening-point (.getListeningPoint (sip-provider))))
+  ([transport] (map-listening-point (.getListeningPoint (sip-provider) transport))))
 
 (defn sip-provider!
   "Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.
@@ -86,6 +117,18 @@
     (.getServerTransaction event)
     (.getClientTransaction event)))
 
+(defmacro trace-call
+  "Log the exception from event callback."
+  {:added "0.2.0"
+   :private true}
+  [callback event arg]
+  (let [callback-name (str "process" (reduce str (map capitalize (split (str callback) #"-"))))]
+    `(try
+       (log/trace ~callback-name "has been invoked." (bean ~event))
+       (and ~callback (~callback ~arg))
+       (catch Exception e#
+         (log/error "Exception occurs when calling the event callback" ~callback-name ":" e#)))))
+
 (defn set-listener!
   "Set several event listening function to current bound provider.
   Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
@@ -99,37 +142,29 @@
          (check-optional processors :io-exception fn?)
          (check-optional processors :transaction-terminated fn?)
          (check-optional processors :dialog-terminated fn?)]}
-  (.addSipListener *sip-provider*
+  (.addSipListener (sip-provider)
     (let [{:keys [request response timeout io-exception
                   transaction-terminated dialog-terminated]} (apply array-map processors)]
       (reify SipListener
         (processRequest [this event]
-          (log/trace "processRequest has been invoked." (bean event))
-          (and request (request {:request (.getRequest event)
-                                 :server-transaction (.getServerTransaction event)
-                                 :dialog (.getDialog event)})))
+          (trace-call request event {:request (.getRequest event)
+                                     :server-transaction (.getServerTransaction event)
+                                     :dialog (.getDialog event)}))
         (processResponse [this event]
-          (log/trace "processResponse has been invoked." (bean event))
-          (and response (response {:response (.getResponse event)
-                                   :client-transaction (.getClientTransaction event)
-                                   :dialog (.getDialog event)})))
+          (trace-call response event {:response (.getResponse event)
+                                      :client-transaction (.getClientTransaction event)
+                                      :dialog (.getDialog event)}))
         (processIOException [this event]
-          (log/trace "processIOException has been invoked." (bean event))
-          (and io-exception (io-exception {:host (.getHost event)
-                                           :port (.getPort event)
-                                           :transport (.getTransport event)})))
+          (trace-call io-exception event {:host (.getHost event)
+                                          :port (.getPort event)
+                                          :transport (.getTransport event)}))
         (processTimeout [this event]
-          (log/trace "processTimeout has been invoked." (bean event))
-          (if (= (.getTimeout event) Timeout/TRANSACTION)
-            (and timeout (timeout {:transaction (trans-from-event event)
-                                   :timeout (.. event (getTimeout) (getValue))}))
-            (log/warn "cljain doesn't support none transaction timeout.")))
+          (trace-call timeout event {:transaction (trans-from-event event)
+                                     :timeout (.. event (getTimeout) (getValue))}))
         (processTransactionTerminated [this event]
-          (log/trace "processTransactionTerminated has been invoked." (bean event))
-          (and transaction-terminated (transaction-terminated (trans-from-event event))))
+          (trace-call transaction-terminated event (trans-from-event event)))
         (processDialogTerminated [this event]
-          (log/trace "processDialogTerminated has been invoked." (bean event))
-          (and dialog-terminated (dialog-terminated (.getDialog event))))))))
+          (trace-call dialog-terminated event (.getDialog event)))))))
 
 (defn start!
   "Start to run the stack which bound with current bound provider."
@@ -149,30 +184,30 @@
   "Generate a new Call-ID header use current bound provider."
   {:added "0.2.0"}
   []
-  (.getNewCallId *sip-provider*))
+  (.getNewCallId (sip-provider)))
 
 (defn send-request!
   "Send out of dialog SipRequest use current bound provider."
   {:added "0.2.0"}
   [request]
-  (.sendRequest *sip-provider* request))
+  (.sendRequest (sip-provider) request))
 
 (defn new-server-transaction!
   "An application has the responsibility of deciding to respond to a Request
   that does not match an existing server transaction."
   {:added "0.2.0"}
   [request]
-  (.getNewServerTransaction *sip-provider* request))
+  (.getNewServerTransaction (sip-provider) request))
 
 (defn new-client-transcation!
   "Before an application can send a new request it must first request
   a new client transaction to handle that Request."
   {:added "0.2.0"}
   [request]
-  (.getNewClientTransaction *sip-provider* request))
+  (.getNewClientTransaction (sip-provider) request))
 
 (defn new-dialog!
   "Create a dialog for the given transaction."
   {:added "0.2.0"}
   [transaction]
-  (.getNewDialog *sip-provider* transaction))
+  (.getNewDialog (sip-provider) transaction))
