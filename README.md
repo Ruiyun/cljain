@@ -2,7 +2,7 @@ cljain
 =========
 
 The cljain is an abstraction layer sitting on top of JAIN-SIP.
-It let's you use it as clojure way.
+It let's you use it as [Clojure] way.
 
 Installation
 ============
@@ -27,6 +27,8 @@ Then execute
 
 And here is an example to show how to work with cljain.
 
+#### `src/lobos/config.clj`
+```clojure
     (use 'cljain.dum)
     (require '[cljain.sip.core :as sip]
              '[cljain.sip.header :as header]
@@ -45,6 +47,12 @@ And here is an example to show how to work with cljain.
         :on-success (fn [_ _ _] (println "Message has been sent successfully."))
         :on-failure (fn [_ _ response] (println "oops," (message/reason response)))
         :on-timeout (fn [_] (println "Timeout, try it later."))))
+```
+
+Documentation
+=============
+
+For more detailed information on **cljain**, please refer to the  [documentation].
 
 License
 =======
@@ -52,3 +60,7 @@ License
 Copyright (C) 2012 Ruiyun Wen
 
 Distributed under the Eclipse Public License, the same as Clojure.
+
+
+[Clojure]:              http://clojure.org/
+[documentation]:        http://ruiyun.github.com/cljain/
