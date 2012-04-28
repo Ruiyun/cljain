@@ -1,0 +1,225 @@
+<html>
+  <head>
+    <title>cljain.dum - cljain API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">cljain API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">cljain</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+      </ul>
+    </div>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/account">account</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/account-map">account-map</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/add-handler!">add-handler!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/def-request-handler">def-request-handler</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/finalize!">finalize!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/initialize!">initialize!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/legal-content?">legal-content?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/send-request!">send-request!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/send-response!">send-response!</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.dum</span>
+  - <span id="header-project">cljain</span> <span id="header-version"></span>
+  </h1>
+<span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
+<br />Full namespace name: <span id="long-name">cljain.dum</span>
+<p></p>
+<h2>Overview</h2>
+<pre id="namespace-docstr">place doc string here</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/account">account</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (account)
+</pre>
+  <pre id="var-docstr">Get current bound account information.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/account-map">account-map</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Store current account information, contain :user :domain :display-name</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/add-handler!">add-handler!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (add-handler! method process-fn)
+</pre>
+  <pre id="var-docstr">Add a sip request received event handler to dum.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/def-request-handler">def-request-handler</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage">Usage: (def-request-handler method [request transaction dialog] body*)
+</pre>
+  <pre id="var-docstr">Define the handler to handle the sip request received from under layer.
+
+(def-request-handler :MESSAGE [request transaction dialog]
+  (do-somethin)
+  ...)</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/finalize!">finalize!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (finalize!)
+</pre>
+  <pre id="var-docstr">Clean user account information with the current bound provider.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/initialize!">initialize!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (initialize! &amp; account-info)
+</pre>
+  <pre id="var-docstr">Set the default user account information with the current bound provider.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/legal-content?">legal-content?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (legal-content? content)
+</pre>
+  <pre id="var-docstr">Check the content is a string or a map with :type, :sub-type, :length and :content keys.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/send-request!">send-request!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (send-request! message &amp; options)
+</pre>
+  <pre id="var-docstr">Fluent style sip message send function.
+
+The simplest example just send a trivial MESSAGE:
+(send-request! :MESSAGE :to (address (uri "192.168.1.128"))
+(send-request! :INFO :in dialog-with-bob)
+
+More complicate example:
+(let [bob (address (uri "dream.com" :user "bob") "Bob")
+      alice (address (uri "dream.com" :user "alice") "Alice")]
+  (send-request! "MESSAGE" :pack "Welcome" :to bob :from alice
+    :use "UDP" :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %)))
+
+If the pack content is not just a trivial string, provide a well named funciont
+to return a content map is recommended.
+{:type "application"
+ :sub-type "pidf-diff+xml"
+ :content content-object}</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/send-response!">send-response!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (send-response! status-code &amp; options)
+</pre>
+  <pre id="var-docstr">Send response with a server transactions.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">No copyright info </div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>

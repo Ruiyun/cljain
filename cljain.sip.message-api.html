@@ -1,0 +1,244 @@
+<html>
+  <head>
+    <title>cljain.sip.message - cljain API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">cljain API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">cljain</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+      </ul>
+    </div>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/add-header!">add-header!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/header">header</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/method">method</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/reason">reason</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/remove-header!">remove-header!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/request">request</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/response">response</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/set-content!">set-content!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/set-header!">set-header!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/status-code">status-code</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.sip.message</span>
+  - <span id="header-project">cljain</span> <span id="header-version"></span>
+  </h1>
+<span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
+<br />Full namespace name: <span id="long-name">cljain.sip.message</span>
+<p></p>
+<h2>Overview</h2>
+<pre id="namespace-docstr">place doc string here</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/add-header!">add-header!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (add-header! message header)
+</pre>
+  <pre id="var-docstr">The Header is added to the end of the List and will appear in that order in the SIP Message.
+Required Headers that are singletons should not be added to the message as they already
+exist in the message and therefore should be changed using the 'set-header!' method.
+
+This method should be used to support the special case of adding required ViaHeaders to a message.
+When adding a ViaHeader using this method the implementation will add the ViaHeader to the
+top of the ViaHeader list, and not the end like all other Headers.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/header">header</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (header message header-name)
+</pre>
+  <pre id="var-docstr">Gets the Header of the specified name in this Message.
+If multiple Headers of this header name exist in the message,
+the first header in the message is returned.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/method">method</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (method request)
+</pre>
+  <pre id="var-docstr">Gets method string of this Request message.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/reason">reason</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (reason response)
+</pre>
+  <pre id="var-docstr">Gets the reason phrase of this Response message.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/remove-header!">remove-header!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (remove-header! message header-name)
+</pre>
+  <pre id="var-docstr">Removes the Header of the supplied name from the list of headers in this Message.
+If multiple headers exist then they are all removed from the header list.
+If no headers exist then this method returns silently.
+This method should not be used to remove required Headers, required Headers should be
+replaced using the 'set-header!'.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/request">request</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (request method req-uri from call-id &amp; more-headers)
+</pre>
+  <pre id="var-docstr">Creates a new Request message of type specified by the method paramater,
+containing the URI of the Request, the mandatory headers of the message.
+This new Request does not contain a body.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/response">response</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (response status-code reqest &amp; more-headers)
+</pre>
+  <pre id="var-docstr">Creates a new Response message of type specified by the statusCode paramater,
+based on a specific Request message. This new Response does not contain a body.
+Only the required headers are copied from the Request.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/set-content!">set-content!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (set-content! message type-header content)
+</pre>
+  <pre id="var-docstr">Sets the new Header to replace existings Header of that type in the message.
+If the SIP message contains more than one Header of the new Header type it should
+replace the first occurance of this Header and removes all other Headers of this type.
+If no Header of this type exists this header is added to the end of the SIP Message.
+This method should be used to change required Headers and overwrite optional Headers.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/set-header!">set-header!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (set-header! message header)
+</pre>
+  <pre id="var-docstr">Sets the new Header to replace existings Header of that type in the message.
+If the SIP message contains more than one Header of the new Header type it should
+replace the first occurance of this Header and removes all other Headers of this type.
+If no Header of this type exists this header is added to the end of the SIP Message.
+This method should be used to change required Headers and overwrite optional Headers.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/status-code">status-code</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (status-code response)
+</pre>
+  <pre id="var-docstr">Gets the integer value of the status code of Response,
+which identifies the outcome of the request to which this response is related.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">No copyright info </div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>

@@ -1,0 +1,184 @@
+<html>
+  <head>
+    <title>cljain.sip.dialog - cljain API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">cljain API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">cljain</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+      </ul>
+    </div>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/ack">ack</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/application-data">application-data</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/create-request">create-request</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/dialog?">dialog?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/send-ack!">send-ack!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/send-request!">send-request!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.dialog/set-application-data">set-application-data</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.sip.dialog</span>
+  - <span id="header-project">cljain</span> <span id="header-version"></span>
+  </h1>
+<span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
+<br />Full namespace name: <span id="long-name">cljain.sip.dialog</span>
+<p></p>
+<h2>Overview</h2>
+<pre id="namespace-docstr">place doc string here</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/ack">ack</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (ack dialog seq-num)
+</pre>
+  <pre id="var-docstr">Creates an ACK request for an Invite that was responded with 2xx response.
+The cseq number for the invite is supplied to relate the ACK to its original invite request.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/application-data">application-data</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (application-data dialog)
+</pre>
+  <pre id="var-docstr">Gets the application specific data specific to this dialog.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/create-request">create-request</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (create-request dialog method)
+</pre>
+  <pre id="var-docstr">Creates a new Request message based on the dialog creating request.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/dialog?">dialog?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (dialog? object)
+</pre>
+  <pre id="var-docstr">Check the obj is an instance of javax.sip.Dialog</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/send-ack!">send-ack!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (send-ack! dialog ack)
+</pre>
+  <pre id="var-docstr">Sends ACK Request to the remote party of this dialog.
+This method implies that the application is functioning as User Agent Client
+hence the underlying SipProvider acts statefully.
+This method does not increment the local sequence number.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/send-request!">send-request!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (send-request! dialog transaction)
+</pre>
+  <pre id="var-docstr">Sends a Request to the remote party of this dialog.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.dialog/set-application-data">set-application-data</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (set-application-data dialog data)
+</pre>
+  <pre id="var-docstr">Sets application specific data to this dialog.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">No copyright info </div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>

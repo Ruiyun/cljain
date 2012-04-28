@@ -1,0 +1,352 @@
+<html>
+  <head>
+    <title>cljain.sip.core - cljain API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">cljain API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">cljain</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+      </ul>
+    </div>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/*sip-provider*">*sip-provider*</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/already-bound-provider?">already-bound-provider?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/gen-call-id-header">gen-call-id-header</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/global-bind-sip-provider!">global-bind-sip-provider!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/global-unbind-sip-provider!">global-unbind-sip-provider!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/listening-point">listening-point</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/new-client-transcation!">new-client-transcation!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/new-dialog!">new-dialog!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/new-server-transaction!">new-server-transaction!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/provider-can-be-found?">provider-can-be-found?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/send-request!">send-request!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/set-listener!">set-listener!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/sip-factory">sip-factory</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/sip-provider">sip-provider</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/sip-provider!">sip-provider!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/sip-stack">sip-stack</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/stack-name">stack-name</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/start!">start!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/stop-and-release!">stop-and-release!</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.sip.core</span>
+  - <span id="header-project">cljain</span> <span id="header-version"></span>
+  </h1>
+<span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
+<br />Full namespace name: <span id="long-name">cljain.sip.core</span>
+<p></p>
+<h2>Overview</h2>
+<pre id="namespace-docstr">place doc string here</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/*sip-provider*">*sip-provider*</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">Before call any function expect 'sip-provider!' in the cljain.sip.core namespace,
+please binding *sip-provider* with the current provider object first.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/already-bound-provider?">already-bound-provider?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (already-bound-provider?)
+</pre>
+  <pre id="var-docstr">Check whether the *sip-provider* has been bound in current thread.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/gen-call-id-header">gen-call-id-header</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (gen-call-id-header)
+</pre>
+  <pre id="var-docstr">Generate a new Call-ID header use current bound provider.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/global-bind-sip-provider!">global-bind-sip-provider!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (global-bind-sip-provider! provider)
+</pre>
+  <pre id="var-docstr">Bind the sip-provider in global scope.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/global-unbind-sip-provider!">global-unbind-sip-provider!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (global-unbind-sip-provider!)
+</pre>
+  <pre id="var-docstr">Unbind the sip-provider in global scope.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/listening-point">listening-point</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (listening-point)
+       (listening-point transport)
+</pre>
+  <pre id="var-docstr">Get the current bound listening ip, port and transport information.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/new-client-transcation!">new-client-transcation!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (new-client-transcation! request)
+</pre>
+  <pre id="var-docstr">Before an application can send a new request it must first request
+a new client transaction to handle that Request.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/new-dialog!">new-dialog!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (new-dialog! transaction)
+</pre>
+  <pre id="var-docstr">Create a dialog for the given transaction.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/new-server-transaction!">new-server-transaction!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (new-server-transaction! request)
+</pre>
+  <pre id="var-docstr">An application has the responsibility of deciding to respond to a Request
+that does not match an existing server transaction.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/provider-can-be-found?">provider-can-be-found?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (provider-can-be-found?)
+</pre>
+  <pre id="var-docstr">Check where the *sip-provider* has been bound or global sip-provider has been set.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/send-request!">send-request!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (send-request! request)
+</pre>
+  <pre id="var-docstr">Send out of dialog SipRequest use current bound provider.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/set-listener!">set-listener!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (set-listener! &amp; processors)
+</pre>
+  <pre id="var-docstr">Set several event listening function to current bound provider.
+Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
+an exception will be thrown.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/sip-factory">sip-factory</h2>
+  <span id="var-type">var</span><br />
+  <pre id="var-usage"></pre>
+  <pre id="var-docstr">The instance of JAIN-SIP SipFactory.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/sip-provider">sip-provider</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (sip-provider)
+</pre>
+  <pre id="var-docstr">Get the current bound *sip-provider* or global-sip-provider.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/sip-provider!">sip-provider!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (sip-provider! name ip port transport &amp; properties)
+</pre>
+  <pre id="var-docstr">Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.
+Rember, the name must be unique to make a distinction between other provider.
+To set standard SipStack properties, use the property's lowcase short name as keyword.
+If want to set the nist define property, let property keys lead with 'nist'.
+
+(sip-provider "cool-phone" "192.168.1.2" 5060 "UDP" :outbound-proxy "192.168.1.128")
+
+More SipStack properties document can be found here:
+<a href="http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html">http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html</a>
+and
+<a href="http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html">http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html</a></pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/sip-stack">sip-stack</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (sip-stack)
+</pre>
+  <pre id="var-docstr">Get the SipStack object from a SipProvider object.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/stack-name">stack-name</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (stack-name)
+</pre>
+  <pre id="var-docstr">Get the SipStack name from a SipProvider object.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/start!">start!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (start!)
+</pre>
+  <pre id="var-docstr">Start to run the stack which bound with current bound provider.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/stop-and-release!">stop-and-release!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (stop-and-release!)
+</pre>
+  <pre id="var-docstr">Stop the stack wich bound with current bound provider. And release all resource associated the stack.
+Becareful, after called 'stop!' function, all other function include 'start!' will be invalid.
+A new provider need be generated for later call.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">No copyright info </div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>

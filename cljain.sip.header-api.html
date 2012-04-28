@@ -1,0 +1,876 @@
+<html>
+  <head>
+    <title>cljain.sip.header - cljain API documentation</title>
+    <link href="static/favicon.png" rel="icon" />
+    <link href="static/favicon.png" rel="shortcut icon" />
+    <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/wiki.css" rel="stylesheet" />
+    <link media="all" type="text/css" href="static/internal.css" rel="stylesheet" />
+    <style>.menuWrapper{height: 36px;}</style>
+    <!--[if lte IE 6]>
+    <link rel="stylesheet" href="http://www.wikispaces.com/_/2009051601/s/internal_ie.css" type="text/css" />
+    <![endif]-->
+  </head>
+<!--
+This document was auto-generated from the source by the clojure autodoc system.
+To report errors or ask questions about the overall documentation structure, formatting,
+etc., contact Tom Faulhaber (google mail name: tomfaulhaber).
+For errors in the documentation of a particular namespace, contact the author of that
+namespace.
+-->
+  <body>
+    <div id="AllContentContainer">
+      <div id="Header">
+	<a id="Logo" href="index.html"><img alt="Clojure" height="100" width="100" src="static/clojure-icon.gif" /></a>
+	<h1><a title="page header title" id="page-header" href="index.html">cljain API Documentation</a></h1>
+      </div>
+      <div id="leftcolumn"><div style="text-align: center;"></div>
+<div class="menu">
+  <div class="WikiCustomNav WikiElement wiki">
+    <span class="toc-header"><span id="project-name">cljain</span> <span id="version"></span> API</span><br />
+    <ul>
+      <li><a class="wiki_link" href="index.html">Overview</a></li>
+      <li><a class="wiki_link" href="api-index.html">API Index</a></li>
+    </ul>
+    <div class="NamespaceTOC">
+      <span class="toc-header">Namespaces</span>
+      <ul id="left-sidebar-list">
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+      </ul>
+    </div>
+    
+    <a href="http://clojure.org" class="wiki_link">Clojure Home</a>
+  </div>
+</div>
+</div>
+      <div id="rightcolumn">
+	<div id="Content">
+	  <div class="contentBox"><div class="innerContentBox">
+              <div id="content_view" class="wiki wikiPage">
+                <div id="right-sidebar"><div id="toc">
+  <h1 class="nopad">Table of Contents</h1>
+  <div style="margin-left: 1em;" class="toc-section">
+    <a href="#toc0">Overview</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/accept">accept</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/accept-encoding">accept-encoding</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/accept-language">accept-language</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/alert-info">alert-info</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/allow">allow</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/allow-events">allow-events</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/authentication-info">authentication-info</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/authorization">authorization</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/c-seq">c-seq</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/call-id">call-id</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/call-info">call-info</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/contact">contact</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/content-disposition">content-disposition</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/content-encoding">content-encoding</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/content-language">content-language</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/content-length">content-length</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/content-type">content-type</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/date">date</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/defheader">defheader</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/error-info">error-info</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/event">event</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/expires">expires</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/extension">extension</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/from">from</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/gen-branch">gen-branch</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/gen-tag">gen-tag</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/get-address">get-address</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/header?">header?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/in-reply-to">in-reply-to</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/max-forwards">max-forwards</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/mime-version">mime-version</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/min-expires">min-expires</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/organization">organization</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/priority">priority</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/proxy-authenticate">proxy-authenticate</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/proxy-authorization">proxy-authorization</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/proxy-require">proxy-require</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/r-ack">r-ack</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/r-seq">r-seq</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/reason">reason</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/record-route">record-route</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/refer-to">refer-to</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/reply-to">reply-to</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/require">require</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/retry-after">retry-after</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/route">route</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/server">server</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/sip-etag">sip-etag</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/sip-if-match">sip-if-match</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/subject">subject</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/subscription-state">subscription-state</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/supported">supported</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/time-stamp">time-stamp</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/to">to</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/unsupported">unsupported</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/user-agent">user-agent</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/via">via</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/warning">warning</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/wildcard-contact">wildcard-contact</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.header/www-authenticate">www-authenticate</a>
+    </div>
+    <br />
+  </div>
+</div>
+</div>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.sip.header</span>
+  - <span id="header-project">cljain</span> <span id="header-version"></span>
+  </h1>
+<span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
+<br />Full namespace name: <span id="long-name">cljain.sip.header</span>
+<p></p>
+<h2>Overview</h2>
+<pre id="namespace-docstr">place doc string here</pre>
+
+
+<br />
+<h2>Public Variables and Functions</h2>
+<div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/accept">accept</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (accept content-type sub-type)
+</pre>
+  <pre id="var-docstr">Create a new AcceptHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/accept-encoding">accept-encoding</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (accept-encoding encoding)
+</pre>
+  <pre id="var-docstr">Create a new AcceptEncodingHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/accept-language">accept-language</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (accept-language language)
+</pre>
+  <pre id="var-docstr">Create a new AcceptLanguageHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/alert-info">alert-info</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (alert-info info)
+</pre>
+  <pre id="var-docstr">Create a new AlertInfoHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/allow">allow</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (allow method)
+</pre>
+  <pre id="var-docstr">Create a new AllowHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/allow-events">allow-events</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (allow-events event-type)
+</pre>
+  <pre id="var-docstr">Create a new AllowEventsHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/authentication-info">authentication-info</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (authentication-info response)
+</pre>
+  <pre id="var-docstr">Create a new AuthenticationInfoHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/authorization">authorization</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (authorization scheme)
+</pre>
+  <pre id="var-docstr">Create a new AuthorizationHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/c-seq">c-seq</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (c-seq number method)
+</pre>
+  <pre id="var-docstr">Create a new CSeqHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/call-id">call-id</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (call-id id)
+</pre>
+  <pre id="var-docstr">Create a new CallIdHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/call-info">call-info</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (call-info info)
+</pre>
+  <pre id="var-docstr">Create a new CallInfoHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/contact">contact</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (contact address)
+</pre>
+  <pre id="var-docstr">Create a new ContactHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/content-disposition">content-disposition</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (content-disposition disposition-type)
+</pre>
+  <pre id="var-docstr">Create a new ContentDispositionHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/content-encoding">content-encoding</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (content-encoding encoding)
+</pre>
+  <pre id="var-docstr">Create a new ContentEncodingHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/content-language">content-language</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (content-language language)
+</pre>
+  <pre id="var-docstr">Create a new ContentLanguageHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/content-length">content-length</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (content-length length)
+</pre>
+  <pre id="var-docstr">Create a new ContentLengthHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/content-type">content-type</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (content-type type sub-type)
+</pre>
+  <pre id="var-docstr">Create a new ContentTypeHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/date">date</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (date date)
+</pre>
+  <pre id="var-docstr">Create a new DateHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/defheader">defheader</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage">Usage: (defheader name [args*])
+</pre>
+  <pre id="var-docstr">Use the macro to define sip headers. More document could be found here
+<a href="http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html">http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html</a></pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/error-info">error-info</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (error-info info)
+</pre>
+  <pre id="var-docstr">Create a new ErrorInfoHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/event">event</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (event type)
+</pre>
+  <pre id="var-docstr">Create a new EventHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/expires">expires</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (expires seconds)
+</pre>
+  <pre id="var-docstr">Create a new ExpiresHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/extension">extension</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (extension name value)
+</pre>
+  <pre id="var-docstr">Creates a new Header based on the newly supplied name and value values.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/from">from</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (from address tag)
+</pre>
+  <pre id="var-docstr">Create a new FromHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/gen-branch">gen-branch</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (gen-branch)
+</pre>
+  <pre id="var-docstr">Generate a new branch id string.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/gen-tag">gen-tag</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (gen-tag)
+</pre>
+  <pre id="var-docstr">Generate a new tag string.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/get-address">get-address</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (get-address header)
+</pre>
+  <pre id="var-docstr">place doc string here</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/header?">header?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (header? object)
+</pre>
+  <pre id="var-docstr">Check whether the object is a Header or not</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/in-reply-to">in-reply-to</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (in-reply-to call-id)
+</pre>
+  <pre id="var-docstr">Create a new InReplyToHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/max-forwards">max-forwards</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (max-forwards number)
+</pre>
+  <pre id="var-docstr">Create a new MaxForwardsHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/mime-version">mime-version</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (mime-version major minor)
+</pre>
+  <pre id="var-docstr">Create a new MimeVersionHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/min-expires">min-expires</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (min-expires seconds)
+</pre>
+  <pre id="var-docstr">Create a new MinExpiresHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/organization">organization</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (organization value)
+</pre>
+  <pre id="var-docstr">Create a new OrganizationHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/priority">priority</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (priority value)
+</pre>
+  <pre id="var-docstr">Create a new PriorityHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/proxy-authenticate">proxy-authenticate</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (proxy-authenticate scheme)
+</pre>
+  <pre id="var-docstr">Create a new ProxyAuthenticateHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/proxy-authorization">proxy-authorization</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (proxy-authorization scheme)
+</pre>
+  <pre id="var-docstr">Create a new ProxyAuthorizationHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/proxy-require">proxy-require</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (proxy-require option-tag)
+</pre>
+  <pre id="var-docstr">Create a new ProxyRequireHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/r-ack">r-ack</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (r-ack r-seq c-seq method)
+</pre>
+  <pre id="var-docstr">Create a new RAckHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/r-seq">r-seq</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (r-seq number)
+</pre>
+  <pre id="var-docstr">Create a new RSeqHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/reason">reason</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (reason protocol cause text)
+</pre>
+  <pre id="var-docstr">Create a new ReasonHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/record-route">record-route</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (record-route address)
+</pre>
+  <pre id="var-docstr">Create a new RecordRouteHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/refer-to">refer-to</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (refer-to address)
+</pre>
+  <pre id="var-docstr">Create a new ReferToHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/reply-to">reply-to</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (reply-to address)
+</pre>
+  <pre id="var-docstr">Create a new ReplyToHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/require">require</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (require option-tag)
+</pre>
+  <pre id="var-docstr">Create a new RequireHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/retry-after">retry-after</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (retry-after seconds)
+</pre>
+  <pre id="var-docstr">Create a new RetryAfterHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/route">route</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (route address)
+</pre>
+  <pre id="var-docstr">Create a new RouteHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/server">server</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (server product)
+</pre>
+  <pre id="var-docstr">Create a new ServerHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/sip-etag">sip-etag</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (sip-etag etag)
+</pre>
+  <pre id="var-docstr">Creates a new SIP-ETag header with the supplied tag value</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/sip-if-match">sip-if-match</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (sip-if-match etag)
+</pre>
+  <pre id="var-docstr">Creates a new SIP-If-Match header with the supplied tag value</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/subject">subject</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (subject subject)
+</pre>
+  <pre id="var-docstr">Create a new SubjectHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/subscription-state">subscription-state</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (subscription-state state)
+</pre>
+  <pre id="var-docstr">Create a new SubscriptionStateHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/supported">supported</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (supported option-tag)
+</pre>
+  <pre id="var-docstr">Create a new SupportedHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/time-stamp">time-stamp</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (time-stamp time)
+</pre>
+  <pre id="var-docstr">Create a new TimeStampHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/to">to</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (to address tag)
+</pre>
+  <pre id="var-docstr">Create a new ToHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/unsupported">unsupported</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (unsupported option-tag)
+</pre>
+  <pre id="var-docstr">Create a new UnsupportedHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/user-agent">user-agent</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (user-agent product)
+</pre>
+  <pre id="var-docstr">Create a new UserAgentHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/via">via</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (via host port transport branch)
+</pre>
+  <pre id="var-docstr">Create a new ViaHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/warning">warning</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (warning agent code comment)
+</pre>
+  <pre id="var-docstr">Create a new WarningHeader</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/wildcard-contact">wildcard-contact</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (wildcard-contact)
+</pre>
+  <pre id="var-docstr">Creates a new wildcard ContactHeader.
+This is used in Register requests to indicate to the server that it should remove all locations the at which
+the user is currently available. This implies that the following conditions are met:
+
+ContactHeader.getAddress.getUserInfo() == *;
+ContactHeader.getAddress.isWildCard() == true;
+ContactHeader.getExpires() == 0;</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.header/www-authenticate">www-authenticate</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (www-authenticate scheme)
+</pre>
+  <pre id="var-docstr">Creates a new WWWAuthenticateHeader based on the newly supplied scheme value.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div>
+
+
+</div>
+              </div>
+            </div>
+          </div>
+	</div>
+	<div id="foot">
+	  <div style="text-align: center;" id="copyright">No copyright info </div>
+	</div>
+      </div>
+      <div id="DesignedBy">Logo &amp; site design by <a title="Visit Tom Hickey's website." href="http://www.tomhickey.com">Tom Hickey</a>.<br />
+      Clojure auto-documentation system by Tom Faulhaber.</div>
+    </div>
+    <!-- /AllContentContainer -->
+  </body>
+
+</html>
