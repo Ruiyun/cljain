@@ -1,7 +1,7 @@
-ClojureQL
+cljain
 =========
 
-ClojureQL is an abstraction layer sitting on top of JAIN-SIP library.
+The cljain is an abstraction layer sitting on top of JAIN-SIP.
 It let's you use it as clojure way.
 
 Installation
