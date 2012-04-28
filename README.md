@@ -1,7 +1,7 @@
 cljain
 =========
 
-The cljain is an abstraction layer sitting on top of JAIN-SIP.
+The cljain is an abstraction layer sitting on top of [JAIN-SIP].
 It let's you use it as [Clojure] way.
 
 Installation
@@ -27,7 +27,6 @@ Then execute
 
 And here is an example to show how to work with cljain.
 
-#### `src/lobos/config.clj`
 ```clojure
     (use 'cljain.dum)
     (require '[cljain.sip.core :as sip]
@@ -61,6 +60,6 @@ Copyright (C) 2012 Ruiyun Wen
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
-
+[JAIN-SIP]:             http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html
 [Clojure]:              http://clojure.org/
 [documentation]:        http://ruiyun.github.com/cljain/
