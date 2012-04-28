@@ -124,7 +124,7 @@
   [callback event arg]
   (let [callback-name (str "process" (reduce str (map capitalize (split (str callback) #"-"))))]
     `(try
-       (log/trace ~callback-name "has been invoked." (bean ~event))
+       (log/trace ~callback-name "has been invoked." \newline "event:" (bean ~event))
        (and ~callback (~callback ~arg))
        (catch Exception e#
          (log/error "Exception occurs when calling the event callback" ~callback-name ":" e#)))))

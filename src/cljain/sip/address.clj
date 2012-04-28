@@ -54,11 +54,11 @@
 (defn address?
   "Check the 'obj' is an instance of javax.sip.Address."
   {:added "0.2.0"}
-  [obj]
-  (instance? Address obj))
+  [object]
+  (instance? Address object))
 
 (defn uri?
   "Check the 'obj' is an instance of javax.sip.URI."
   {:added "0.2.0"}
-  [obj]
-  (instance? URI obj))
+  [object]
+  (instance? URI object))

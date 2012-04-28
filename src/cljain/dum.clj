@@ -10,7 +10,7 @@
             [cljain.sip.dialog :as dlg]
             [cljain.sip.transaction :as trans]))
 
-(def ^{:doc "place doc string here"
+(def ^{:doc "Store current account information, contain :user :domain :display-name"
        :added "0.2.0"
        :dynamic true}
   account-map (atom {}))
@@ -63,10 +63,12 @@
     (when (not (nil? client-transaction))
       (let [{process-success :on-success
              process-failure :on-failure} (trans/application-data client-transaction)
-            response-2xx? (= (quot (msg/status-code response) 100) 2)]
-        (if response-2xx?
-          (and process-success (process-success client-transaction dialog response))
-          (and process-failure (process-failure client-transaction dialog response)))))))
+            lead-number-of-status-code (quot (msg/status-code response) 100)]
+        (cond ; ignore 1xx provisional response
+          (= lead-number-of-status-code 2) ; 2xx means final success response
+            (and process-success (process-success client-transaction dialog response))
+          (> lead-number-of-status-code 3) ; 4xx, 5xx, 6xx means error
+            (and process-failure (process-failure client-transaction dialog response)))))))
 
 (defn- timeout-processor
   "Return a function to process transaction timeout event."
@@ -138,7 +140,7 @@
   (let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")
         alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]
     (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice
-      :use \"UDP\" :on-success #(prn %) :on-failure #(prn %) :on-timeout #(prn %)))
+      :use \"UDP\" :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %)))
 
   If the pack content is not just a trivial string, provide a well named funciont
   to return a content map is recommended.
@@ -154,7 +156,7 @@
          (check-optional options :from addr/address?)
          (check-optional options :use :by upper-case in? ["UDP" "TCP"])
          (check-optional options :in dlg/dialog?)
-         (check-optional options :more-headers vector?)
+         (check-optional options :more-headers sequential?)
          (check-optional options :on-success fn?)
          (check-optional options :on-failure fn?)
          (check-optional options :on-timeout fn?)]}
@@ -166,7 +168,7 @@
          more-headers :more-headers
          on-success :on-success
          on-failure :on-failure
-         on-timeout :on-request} (apply array-map options)
+         on-timeout :on-timeout} (apply array-map options)
         {:keys [user domain display-name]} (account)
         {:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
@@ -198,15 +200,16 @@
 
 
 (defn send-response!
-  "Send response with stored server transactions."
+  "Send response with a server transactions."
   {:added "0.2.0"}
-  [status-code transaction & options]
+  [status-code & options]
   {:pre [(core/provider-can-be-found?)
          (even? (count options))
+         (check-required options :in trans/transaction?)
          (check-optional options :pack legal-content?)
          (check-optional options :use :by upper-case in? ["UDP" "TCP"])
          (check-optional options :more-headers vector?)]}
-  (let [{content :pack, transport :use, more-headers :more-headers} (apply array-map options)
+  (let [{transaction :in, content :pack, transport :use, more-headers :more-headers} (apply array-map options)
         {:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
                                       (core/listening-point transport))

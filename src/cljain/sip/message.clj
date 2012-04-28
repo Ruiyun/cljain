@@ -90,18 +90,24 @@
   If no Header of this type exists this header is added to the end of the SIP Message.
   This method should be used to change required Headers and overwrite optional Headers."
   {:added "0.2.0"}
-  [message type-header content]
+  [^Message message, type-header, content]
   (.setContent message content type-header))
 
 (defn method
   "Gets method string of this Request message."
   {:added "0.2.0"}
-  [request]
+  [^Request request]
   (.getMethod request))
 
 (defn status-code
   "Gets the integer value of the status code of Response,
   which identifies the outcome of the request to which this response is related."
   {:added "0.2.0"}
-  [response]
+  [^Response response]
   (.getStatusCode response))
+
+(defn reason
+  "Gets the reason phrase of this Response message."
+  {:added "0.2.0"}
+  [^Response response]
+  (str (status-code response) \space (.getReasonPhrase response)))

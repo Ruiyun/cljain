@@ -1,12 +1,38 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.sip.transaction
+  (:require [clojure.tools.logging :as log])
   (:import [javax.sip Transaction ClientTransaction ServerTransaction]))
 
+(defn request
+  "Returns the request that created this transaction.
+  The transaction state machine needs to keep the Request that resulted in the creation
+  of this transaction while the transaction is still alive. Applications also need to access
+  this information, e.g. a forking proxy server may wish to retrieve the original Invite
+  request to cancel branches of a fork when a final Response has been received by one branch."
+  {:added "0.2.0"}
+  [transaction]
+  (.getRequest transaction))
+
 (defn send-request!
-  "Sends the Request which created this ClientTransaction."
+  "Sends the Request which created this ClientTransaction.
+  When an application wishes to send a Request message, it creates a Request from the
+  MessageFactory and then creates a new ClientTransaction from 'cljain.core/new-client-transcation!'.
+  Calling this method on the ClientTransaction sends the Request onto the network.
+  The Request message gets sent via the ListeningPoint information of the SipProvider that
+  is associated to this ClientTransaction.
+
+  This method assumes that the Request is sent out of Dialog.
+  It uses the Router to determine the next hop. If the Router returns a empty iterator,
+  and a Dialog is associated with the outgoing request of the Transaction then the Dialog route set
+  is used to send the outgoing request.
+
+  This method implies that the application is functioning as either a UAC or a stateful proxy,
+  hence the underlying implementation acts statefully."
   {:added "0.2.0"}
   [client-transaction]
+  (log/trace "cljain.sip.transaction/send-request!" \newline "transaction:" client-transaction \newline
+    "request" (request client-transaction))
   (.sendRequest client-transaction))
 
 (defn send-response!
@@ -24,6 +50,8 @@
   in accordance with the reccomendation of http://bugs.sipit.net/show_bug.cgi?id=769 ."
   {:added "0.2.0"}
   [server-transaction response]
+  (log/trace "cljain.sip.transaction/send-response!" \newline "transaction:" server-transaction \newline
+    "response:" response)
   (.sendResponse server-transaction response))
 
 (defn application-data
@@ -52,12 +80,9 @@
   [transaction]
   (.getBranchId transaction))
 
-(defn request
-  "Returns the request that created this transaction.
-  The transaction state machine needs to keep the Request that resulted in the creation
-  of this transaction while the transaction is still alive. Applications also need to access
-  this information, e.g. a forking proxy server may wish to retrieve the original Invite
-  request to cancel branches of a fork when a final Response has been received by one branch."
+(defn transaction?
+  "Check the obj is an instance of javax.sip.Transaction.
+  Both ClientTransaction and ServerTransaction are pass."
   {:added "0.2.0"}
-  [transaction]
-  (.getRequest transaction))
+  [object]
+  (instance? Transaction object))
