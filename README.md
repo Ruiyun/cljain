@@ -28,7 +28,7 @@ Then execute
 And here is an example to show how to work with cljain.
 
     (use 'cljain.dum)
-    (require '[cljain.sip.core :as core]
+    (require '[cljain.sip.core :as sip]
              '[cljain.sip.header :as header]
              '[cljain.sip.address :as address]
              '[cljain.sip.message :as message])
@@ -36,9 +36,9 @@ And here is an example to show how to work with cljain.
     (def-request-handler :MESSAGE [request transaction dialog]
       (send-response! 200 :in transaction :pack "I receive your message."))
 
-    (core/global-bind-sip-provider! (core/sip-provider! "my-app" "127.0.0.1" 5060 "udp"))
+    (sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "127.0.0.1" 5060 "udp"))
     (initialize! :user "bob" :domain "home" :display-name "Bob")
-    (core/start!)
+    (sip/start!)
 
     (let [alice (address/address (address/sip-uri "127.0.0.1" :port 5070 :user "alice") "Alice")]
       (send-request! :MESSAGE :to alice :pack "Hello, Alice."
