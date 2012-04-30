@@ -198,7 +198,6 @@
         (trans/send-request! transaction)
         request))))
 
-
 (defn send-response!
   "Send response with a server transactions."
   {:added "0.2.0"}
