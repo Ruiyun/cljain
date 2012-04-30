@@ -37,7 +37,7 @@
         name      (symbol name)
         method    (symbol (str "create" cls-name))
         m         {:doc (str "Create a new " cls-name), :arglists (list 'quote (list args)), :added "0.2.0"}]
-    `(def ~(with-meta name m) (partial (memfn ~method ~@args) ~factory))))
+    `(def ~(with-meta name m) (partial (memfn ~method ~@args) factory))))
 
 (defheader accept [^String content-type, ^String sub-type])
 (defheader accept-encoding [^String encoding])
