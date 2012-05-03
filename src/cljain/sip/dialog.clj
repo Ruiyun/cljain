@@ -35,7 +35,8 @@
   [dialog transaction]
   (log/trace "cljain.sip.dialog/send-request!" \newline "dialog:" dialog \newline "transaction:" transaction \newline
     "request" (trans/request transaction))
-  (.sendRequest dialog transaction))
+  (.sendRequest dialog transaction)
+  dialog)
 
 (defn ack
   "Creates an ACK request for an Invite that was responded with 2xx response.
@@ -53,4 +54,5 @@
   {:added "0.2.0"}
   [dialog ack]
   (log/trace "cljain.sip.dialog/send-ack!" \newline "dialog:" dialog "ack:" ack)
-  (.sendAck dialog ack))
+  (.sendAck dialog ack)
+  dialog)

@@ -33,7 +33,8 @@
   [client-transaction]
   (log/trace "cljain.sip.transaction/send-request!" \newline "transaction:" client-transaction \newline
     "request" (request client-transaction))
-  (.sendRequest client-transaction))
+  (.sendRequest client-transaction)
+  client-transaction)
 
 (defn send-response!
   "Sends the Response to a Request which is associated with this ServerTransaction.
@@ -52,7 +53,8 @@
   [server-transaction response]
   (log/trace "cljain.sip.transaction/send-response!" \newline "transaction:" server-transaction \newline
     "response:" response)
-  (.sendResponse server-transaction response))
+  (.sendResponse server-transaction response)
+  server-transaction)
 
 (defn application-data
   "Returns the application data associated with the transaction.
@@ -65,7 +67,8 @@
   "This method allows applications to associate application context with the transaction."
   {:added "0.2.0"}
   [transaction data]
-  (.setApplicationData transaction data))
+  (.setApplicationData transaction data)
+  transaction)
 
 (defn branch-id
   "Returns a unique branch identifer that identifies this transaction.

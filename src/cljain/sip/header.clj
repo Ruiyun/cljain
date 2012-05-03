@@ -5,7 +5,7 @@
   (:use     clojure.string
             [cljain.sip.core :only [sip-factory]])
   (:import  [javax.sip SipFactory]
-            [javax.sip.header HeaderFactory HeaderAddress Header]
+            [javax.sip.header HeaderFactory HeaderAddress Header CSeqHeader]
             [javax.sip.address Address URI]
             [gov.nist.javax.sip Utils]))
 
@@ -137,3 +137,9 @@
   {:added "0.2.0"}
   [object]
   (instance? Header object))
+
+(defn sequence-number
+  "Get the sequence number from a CSeq header."
+  {:added "0.3.0"}
+  [header]
+  (.getSequenceNumber header))

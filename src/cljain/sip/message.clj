@@ -22,7 +22,7 @@
   (let [headers (apply hash-map (mapcat #(vector (.getName %) %) (remove nil? (flatten more-headers))))
         c-seq (get headers "CSeq" (header/c-seq 1 method))
         to (get headers "To" (header/to (addr/address req-uri) nil))
-        via [(get headers "Via")]
+        via (remove nil? [(get headers "Via")])
         max-forward (get headers "Max-Forwards" (header/max-forwards 70))
         request (.createRequest factory req-uri method call-id c-seq from to via max-forward)
         remain-headers (remove #(in? % ["From" "Call-ID" "CSeq" "To" "Via" "Max-Forwards"]) (keys headers))
@@ -59,7 +59,8 @@
   This method should be used to change required Headers and overwrite optional Headers."
   {:added "0.2.0"}
   [^Message message, header]
-  (.setHeader message header))
+  (.setHeader message header)
+  message)
 
 (defn add-header!
   "The Header is added to the end of the List and will appear in that order in the SIP Message.
@@ -71,7 +72,8 @@
   top of the ViaHeader list, and not the end like all other Headers."
   {:added "0.2.0"}
   [^Message message, header]
-  (.addHeader message header))
+  (.addHeader message header)
+  message)
 
 (defn remove-header!
   "Removes the Header of the supplied name from the list of headers in this Message.
@@ -81,7 +83,8 @@
   replaced using the 'set-header!'."
   {:added "0.2.0"}
   [^Message message, header-name]
-  (.removeHeader message header-name))
+  (.removeHeader message header-name)
+  message)
 
 (defn set-content!
   "Sets the new Header to replace existings Header of that type in the message.
@@ -91,7 +94,8 @@
   This method should be used to change required Headers and overwrite optional Headers."
   {:added "0.2.0"}
   [^Message message, type-header, content]
-  (.setContent message content type-header))
+  (.setContent message content type-header)
+  message)
 
 (defn method
   "Gets method string of this Request message."
@@ -111,3 +115,12 @@
   {:added "0.2.0"}
   [^Response response]
   (str (status-code response) \space (.getReasonPhrase response)))
+
+(defn inc-sequence-number!
+  "Increase the sequence number of a request's CSeq header."
+  {:added "0.3.0"}
+  [^Request request]
+  (let [sequence-number   (inc (header/sequence-number (header request "CSeq")))
+        new-c-seq-header  (header/c-seq sequence-number (method request))]
+    (set-header! request new-c-seq-header)
+    request))

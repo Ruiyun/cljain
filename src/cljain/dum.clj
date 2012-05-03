@@ -8,7 +8,8 @@
             [cljain.sip.address :as addr]
             [cljain.sip.message :as msg]
             [cljain.sip.dialog :as dlg]
-            [cljain.sip.transaction :as trans]))
+            [cljain.sip.transaction :as trans]
+            [cljain.tools.timer :as timer]))
 
 (def ^{:doc "Store current account information, contain :user :domain :display-name"
        :added "0.2.0"
@@ -115,7 +116,6 @@
     (and (map? content)
       (= (sort [:type :sub-type :content]) (sort (keys content))))))
 
-
 (defn- try-set-content!
   "Parse the :pack argument from 'send-request!' and 'send-response!',
   then try to set the appropriate Content-Type header and content to the message."
@@ -218,3 +218,54 @@
         response        (msg/response status-code request contact-header more-headers)]
     (try-set-content! response content)
     (trans/send-response! transaction response)))
+
+(def ^{:doc "Store contexts for the register auto refresh."
+       :added "0.3.0"
+       :private false}
+  register-ctx-map (atom {}))
+
+(defn register-to
+  "Send REGISTER sip message to target registry server, and auto refresh register before
+  expired.
+
+  Notice: No matter the first register whether sent successfully, the register auto refresh
+  timer will be started. Application can choose to stop it use 'stop-refresh-register', or
+  let it auto retry after expires secondes."
+  {:added "0.3.0"}
+  [registry-address expires-seconds & event-handlers]
+  {:pre [(addr/address? registry-address)
+         (> expires-seconds 10)
+         (even? (count event-handlers))
+         (check-optional event-handlers :on-success fn?)
+         (check-optional event-handlers :on-failure fn?)]}
+  (let [{:keys [on-success on-failure]} (apply array-map event-handlers)
+        expires-header              (header/expires expires-seconds)
+        safer-interval-milliseconds (* (- expires-seconds 5) 1000)
+        register-ctx                (get @register-ctx-map registry-address)]
+    (if (nil? register-ctx)
+      (let [register-request  (send-request! :REGISTER :to registry-address
+                                :more-headers [expires-header]
+                                :on-success (fn [_ _ _] (and on-success (on-success)))
+                                :on-failure (fn [_ _ _] (and on-failure (on-failure)))
+                                :on-timeout (fn [_] (and on-failure (on-failure))))
+            refresh-timer     (timer/timer "Register-Refresh")]
+        (timer/run! refresh-timer
+          (timer/task
+            (let [request (.clone (get-in @register-ctx-map [registry-address :request]))
+                  request (msg/inc-sequence-number! request)
+                  request (msg/remove-header! request "Via")
+                  transaction (core/new-client-transcation! request)]
+              (trans/send-request! transaction)
+              (swap! register-ctx-map assoc-in [registry-address :request] request)))
+          :delay  safer-interval-milliseconds
+          :period safer-interval-milliseconds)
+        (swap! register-ctx-map assoc registry-address {:timer    refresh-timer
+                                                        :request  register-request})))))
+
+(defn unregister-to
+  "Send REGISTER sip message with expires 0 for unregister."
+  {:added "0.3.0"}
+  [registry-address]
+  (let [refresh-timer (get-in @register-ctx-map [registry-address :timer])]
+    (and refresh-timer (timer/cancel! refresh-timer))
+    (swap! register-ctx-map dissoc registry-address)))
