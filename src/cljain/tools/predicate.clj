@@ -1,13 +1,13 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
-  cljain.util)
+  cljain.tools.predicate)
 
 (defn in?
   "Chekc whether v is in the coll or not."
   {:added "0.2.0"}
   [v coll]
   (some #(= % v) coll))
-  
+
 (defmacro legal-option?
   "place doc string here"
   {:added "0.2.0"}
@@ -17,11 +17,11 @@
         option-key  (first decl)
         decl        (next decl)
         modifier    (if (= :by (first decl))
-                      (fnext decl)
-                      identity)
+      (fnext decl)
+      identity)
         decl        (if (= :by (first decl))
-                      (nnext decl)
-                      decl)
+      (nnext decl)
+      decl)
         f           (first decl)
         args        (next decl)]
     `(let [popts# (partition-by (partial = ~option-key) ~options)

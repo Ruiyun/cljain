@@ -2,7 +2,7 @@
       :author "ruiyun"}
   cljain.sip.transaction
   (:require [clojure.tools.logging :as log])
-  (:import [javax.sip Transaction ClientTransaction ServerTransaction]))
+  (:import  [javax.sip Transaction ClientTransaction ServerTransaction]))
 
 (defn request
   "Returns the request that created this transaction.

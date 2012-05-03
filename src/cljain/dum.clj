@@ -1,7 +1,7 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.dum
-  (:use     cljain.util
+  (:use     cljain.tools
             [clojure.string :only [upper-case]])
   (:require [cljain.sip.core :as core]
             [cljain.sip.header :as header]
@@ -197,7 +197,6 @@
         (try-set-content! request content)
         (trans/send-request! transaction)
         request))))
-
 
 (defn send-response!
   "Send response with a server transactions."

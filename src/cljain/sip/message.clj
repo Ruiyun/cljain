@@ -1,7 +1,7 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.sip.message
-  (:use     cljain.util
+  (:use     cljain.tools.predicate
             [cljain.sip.core :only [sip-factory]])
   (:require [cljain.sip.address :as addr]
             [cljain.sip.header :as header])

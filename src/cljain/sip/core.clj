@@ -1,7 +1,7 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.sip.core
-  (:use     cljain.util
+  (:use     cljain.tools.predicate
             [clojure.string :only [upper-case lower-case capitalize split]])
   (:require [clojure.tools.logging :as log])
   (:import  [java.util Properties]
