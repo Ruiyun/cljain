@@ -221,7 +221,7 @@
 
 (def ^{:doc "Store contexts for the register auto refresh."
        :added "0.3.0"
-       :private false}
+       :private true}
   register-ctx-map (atom {}))
 
 (defn register-to
