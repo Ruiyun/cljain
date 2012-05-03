@@ -234,11 +234,13 @@
   {:added "0.3.0"}
   [registry-address expires-seconds & event-handlers]
   {:pre [(addr/address? registry-address)
-         (> expires-seconds 10)
+         (> expires-seconds 38) ; because a transaction timeout is 32 seconds
          (even? (count event-handlers))
          (check-optional event-handlers :on-success fn?)
-         (check-optional event-handlers :on-failure fn?)]}
-  (let [{:keys [on-success on-failure]} (apply array-map event-handlers)
+         (check-optional event-handlers :on-failure fn?)
+         (check-optional event-handlers :on-refreshed fn?)
+         (check-optional event-handlers :on-refresh-failed fn?)]}
+  (let [{:keys [on-success on-failure on-refreshed on-refresh-failed]} (apply array-map event-handlers)
         expires-header              (header/expires expires-seconds)
         safer-interval-milliseconds (* (- expires-seconds 5) 1000)
         register-ctx                (get @register-ctx-map registry-address)]
@@ -255,6 +257,10 @@
                   request (msg/inc-sequence-number! request)
                   request (msg/remove-header! request "Via")
                   transaction (core/new-client-transcation! request)]
+              (trans/set-application-data! transaction
+                {:on-success (fn [_ _ _] (and on-refreshed (on-refreshed)))
+                 :on-failure (fn [_ _ _] (and on-refresh-failed (on-refresh-failed)))
+                 :on-timeout (fn [_] (and on-refresh-failed (on-refresh-failed)))})
               (trans/send-request! transaction)
               (swap! register-ctx-map assoc-in [registry-address :request] request)))
           :delay  safer-interval-milliseconds

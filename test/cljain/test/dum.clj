@@ -20,5 +20,9 @@
 ;  :on-failure (fn [a b c] (prn "faliure!" a))
 ;  :on-timeout (fn [a] (prn "tiemout" a)))
 
-(dum/register-to (addr/address (addr/sip-uri "127.0.0.1" :port 5070)) 15)
+(dum/register-to (addr/address (addr/sip-uri "127.0.0.1" :port 5070)) 40
+  :on-success #(prn "register-to has success!")
+  :on-failure #(prn "register-to has failed!")
+  :on-refreshed #(prn "register refresh has success!")
+  :on-refresh-failed #(prn "register refresh has failed!"))
 
