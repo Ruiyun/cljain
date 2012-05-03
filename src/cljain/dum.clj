@@ -1,7 +1,7 @@
 (ns ^{:doc "place doc string here"
       :author "ruiyun"}
   cljain.dum
-  (:use     cljain.tools
+  (:use     cljain.tools.predicate
             [clojure.string :only [upper-case]])
   (:require [cljain.sip.core :as core]
             [cljain.sip.header :as header]
