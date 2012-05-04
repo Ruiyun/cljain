@@ -124,7 +124,8 @@
   (when (not (nil? content))
     (let [content-type        (name (or (:type content) "text"))
           content-sub-type    (name (or (:sub-type content) "plain"))
-          content-type-header (header/content-type content-type content-sub-type)]
+          content-type-header (header/content-type content-type content-sub-type)
+          content             (or (:content content) content)]
       (msg/set-content! message content-type-header content))))
 
 ; TODO Do not user application data in transaction or dialog for event dispatch.
