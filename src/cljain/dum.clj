@@ -245,29 +245,29 @@
         expires-header              (header/expires expires-seconds)
         safer-interval-milliseconds (* (- expires-seconds 5) 1000)
         register-ctx                (get @register-ctx-map registry-address)]
-    (if (nil? register-ctx)
-      (let [register-request  (send-request! :REGISTER :to registry-address
-                                :more-headers [expires-header]
-                                :on-success (fn [_ _ _] (and on-success (on-success)))
-                                :on-failure (fn [_ _ _] (and on-failure (on-failure)))
-                                :on-timeout (fn [_] (and on-failure (on-failure))))
-            refresh-timer     (timer/timer "Register-Refresh")]
-        (timer/run! refresh-timer
-          (timer/task
-            (let [request (.clone (get-in @register-ctx-map [registry-address :request]))
-                  request (msg/inc-sequence-number! request)
-                  request (msg/remove-header! request "Via")
-                  transaction (core/new-client-transcation! request)]
-              (trans/set-application-data! transaction
-                {:on-success (fn [_ _ _] (and on-refreshed (on-refreshed)))
-                 :on-failure (fn [_ _ _] (and on-refresh-failed (on-refresh-failed)))
-                 :on-timeout (fn [_] (and on-refresh-failed (on-refresh-failed)))})
-              (trans/send-request! transaction)
-              (swap! register-ctx-map assoc-in [registry-address :request] request)))
-          :delay  safer-interval-milliseconds
-          :period safer-interval-milliseconds)
-        (swap! register-ctx-map assoc registry-address {:timer    refresh-timer
-                                                        :request  register-request})))))
+    (when (nil? register-ctx)
+      (send-request! :REGISTER :to registry-address
+        :more-headers [expires-header]
+        :on-success (fn [transaction _ _]
+                      (swap! register-ctx-map assoc registry-address
+                        {:timer (timer/run! (timer/timer "Register-Refresh")
+                                  (timer/task
+                                    (let [request (.clone (get-in @register-ctx-map [registry-address :request]))
+                                          request (msg/inc-sequence-number! request)
+                                          request (msg/remove-header! request "Via")
+                                          transaction (core/new-client-transcation! request)]
+                                      (trans/set-application-data! transaction
+                                        {:on-success (fn [_ _ _] (and on-refreshed (on-refreshed)))
+                                         :on-failure (fn [_ _ _] (and on-refresh-failed (on-refresh-failed)))
+                                         :on-timeout (fn [_] (and on-refresh-failed (on-refresh-failed)))})
+                                      (trans/send-request! transaction)
+                                      (swap! register-ctx-map assoc-in [registry-address :request] request)))
+                                  :delay  safer-interval-milliseconds
+                                  :period safer-interval-milliseconds)
+                         :request (trans/request transaction)})
+                      (and on-success (on-success)))
+        :on-failure (fn [_ _ _] (and on-failure (on-failure)))
+        :on-timeout (fn [_] (and on-failure (on-failure)))))))
 
 (defn unregister-to
   "Send REGISTER sip message with expires 0 for unregister."
