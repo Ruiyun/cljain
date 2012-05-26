@@ -31,7 +31,7 @@
     request))
 
 (defn response
-  "Creates a new Response message of type specified by the statusCode paramater,
+  "Creates a new Response message of type specified by the status-code paramater,
   based on a specific Request message. This new Response does not contain a body.
   Only the required headers are copied from the Request."
   {:added "0.2.0"}
@@ -86,6 +86,18 @@
   (.removeHeader message header-name)
   message)
 
+(defn content
+  "Gets the body content of the Message as an Object."
+  {:added "0.3.0"}
+  [^Message message]
+  (.getContent message))
+
+(defn raw-content
+  "Gets the body content of the Message as a byte array."
+  {:added "0.3.0"}
+  [^Message message]
+  (.getRawContent message))
+
 (defn set-content!
   "Sets the new Header to replace existings Header of that type in the message.
   If the SIP message contains more than one Header of the new Header type it should
@@ -96,6 +108,13 @@
   [^Message message, type-header, content]
   (.setContent message content type-header)
   message)
+
+(defn remove-content!
+  "Removes the body content from this Message and all associated entity headers,
+  if a body exists, this method returns sliently if no body exists."
+  {:added "0.3.0"}
+  [^Message message]
+  (.removeContent message))
 
 (defn method
   "Gets method string of this Request message."
