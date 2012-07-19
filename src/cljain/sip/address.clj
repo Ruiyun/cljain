@@ -1,26 +1,24 @@
-(ns ^{:doc "place doc string here"
-      :author "ruiyun"}
+(ns ^{:author "ruiyun"}
   cljain.sip.address
   (:use     [cljain.sip.core :only [sip-factory]])
   (:import  [javax.sip SipFactory]
             [javax.sip.address AddressFactory URI SipURI Address]))
 
-(def ^{:doc "place doc string here"
+(def ^{:doc "The factory to create Address and URI."
        :added "0.2.0"
        :private true}
   factory (.createAddressFactory sip-factory))
 
 (defn sip-uri
   "Create a new SipURI object.
-  It is useful to create the sip ReqURI or Address.
 
   (sip-uri \"localhost\" :port 5060 :transport \"udp\" :user \"tom\")"
   {:added "0.1.0"}
-  [host & options]
-  {:pre [(even? (count options))]
+  [host & {:keys [user port transport]}]
+  {:pre [(or (nil? port) (and (integer? port) (pos? port)))
+         (or (nil? transport) (#{"udp" "tcp"} (.toLowerCase transport)))]
    :post [(instance? SipURI %)]}
-  (let [{:keys [user port transport]} (apply hash-map options)
-        uri (.createSipURI factory nil host)]
+  (let [uri (.createSipURI factory nil host)]
     (and user (.setUser uri user))
     (and port (.setPort uri port))
     (and transport (.setTransportParam uri transport))
@@ -45,9 +43,44 @@
     {:post [(instance? Address %)]}
     (.createAddress factory display-name uri)))
 
+(defn sip-address
+  "A convenient way to create a new Address object that limited to sip uri.
+
+  (sip-address \"localhost\" :user \"tom\" :display-name \"Tom\" :port 5060 :transport \"udp\")"
+  {:added "0.4.0"}
+  [host & {:keys [user port transport display-name] :as options}]
+  (let [uri (apply sip-uri host (flatten (seq options)))]
+    (.createAddress factory display-name uri)))
+
+(defn- print-address
+  [^Address addr, ^java.io.Writer w]
+  (.write w "#sip/address \"")
+  (.write w (.toString addr))
+  (.write w "\""))
+
+(defmethod print-method Address
+  [^Address addr, ^java.io.Writer w]
+  (print-address addr w))
+
+(defmethod print-dup Address
+  [^Address addr, ^java.io.Writer w]
+  (print-address addr w))
+
+(defn str->address
+  "Creates an Address with the new address string value.
+
+    \"sip:alice@dreamland.com:5060\" or
+    \"sip:alice@dreamland.com:5060;transport=udp\" or
+    \"\\\"Alice Bird\\\" <sip:alice@dreamland.com:5070;transport=udp>"
+  {:added "0.4.0"}
+  [str]
+  (.createAddress factory str))
+
 (defn uri-from-address
-  "Get the URI member from a Address object."
-  {:added "0.2.0"}
+  "DEPRECATED: Use Java method directly instead.
+  Get the URI member from a Address object."
+  {:added "0.2.0"
+   :deprecated "0.4.0"}
   [^Address address]
   (.getURI address))
 
