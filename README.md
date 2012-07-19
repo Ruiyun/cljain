@@ -11,14 +11,14 @@ Add the following to your **project.clj** or pom.xml:
 
 Lein artifact:
 
-    [cljain "0.3.0"]
+    [cljain "0.4.0-SNAPSHOT"]
 
 Maven:
 
     <dependency>
       <groupId>cljain</groupId>
       <artifactId>cljain</artifactId>
-      <version>0.3.0</version>
+      <version>0.4.0-SNAPSHOT</version>
     </dependency>
 
 Then execute
