@@ -26,3 +26,17 @@
   :on-refreshed #(prn "register refresh has success!")
   :on-refresh-failed #(prn "register refresh has failed!"))
 
+(use 'cljain.dum)
+(require '[cljain.sip.core :as sip])
+
+(def-request-handler :MESSAGE [request transaction dialog]
+  (send-response! 200 :in transaction :pack "I receive your message."))
+
+(sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "127.0.0.1" 5060 "udp"))
+(initialize! :user "bob" :domain "home" :display-name "Bob")
+(sip/start!)
+
+(send-request! :MESSAGE :to #sip/address "sip:alice@dreamland.com" :pack "Hello, Alice."
+  :on-success (fn [_ _ _] (println "Message has been sent successfully."))
+  :on-failure (fn [_ _ response] (println "oops!" (.getStatusCode response)))
+  :on-timeout (fn [_] (println "Timeout, try it later.")))

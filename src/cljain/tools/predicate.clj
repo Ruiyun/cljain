@@ -1,5 +1,6 @@
-(ns ^{:doc "place doc string here"
-      :author "ruiyun"}
+(ns ^{:author "ruiyun"
+      :added "0.2.0"
+      :deprecated "0.4.0"}
   cljain.tools.predicate)
 
 (defn in?

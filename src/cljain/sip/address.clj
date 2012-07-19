@@ -1,4 +1,5 @@
-(ns ^{:author "ruiyun"}
+(ns ^{:author "ruiyun"
+      :added "0.1.0"}
   cljain.sip.address
   (:use     [cljain.sip.core :only [sip-factory]])
   (:import  [javax.sip SipFactory]
@@ -77,7 +78,7 @@
   (.createAddress factory str))
 
 (defn uri-from-address
-  "DEPRECATED: Use Java method directly instead.
+  "DEPRECATED: Use Java method 'getURI' directly instead.
   Get the URI member from a Address object."
   {:added "0.2.0"
    :deprecated "0.4.0"}

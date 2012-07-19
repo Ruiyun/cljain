@@ -1,14 +1,11 @@
-(ns ^{:doc "place doc string here"
-      :author "ruiyun"}
+(ns ^{:author "ruiyun"
+      :added "0.2.0"}
   cljain.sip.core
-  (:use     cljain.tools.predicate
-            [clojure.string :only [upper-case lower-case capitalize split]])
+  (:use [clojure.string :only [upper-case lower-case capitalize split]])
   (:require [clojure.tools.logging :as log])
-  (:import  [java.util Properties]
-            [javax.sip SipFactory SipStack SipProvider SipListener
-             Transaction ClientTransaction Dialog
-             ResponseEvent IOExceptionEvent TimeoutEvent Timeout
-             TransactionTerminatedEvent DialogTerminatedEvent]))
+  (:import [java.util Properties]
+           [javax.sip SipFactory SipStack SipProvider SipListener Transaction ClientTransaction Dialog
+            ResponseEvent IOExceptionEvent TimeoutEvent Timeout TransactionTerminatedEvent DialogTerminatedEvent]))
 
 (def ^{:doc "The instance of JAIN-SIP SipFactory."
        :added "0.2.0"}
@@ -95,7 +92,8 @@
   http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html"
   {:added "0.2.0"}
   [name ip port transport & properties]
-  {:pre [(check-optional properties :outbound-proxy #(re-find #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$" %))]}
+  {:pre [(or (nil? (:outbound-proxy properties))
+           (re-find #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$" (:outbound-proxy properties)))]}
   (let [more-props (apply array-map properties)
         props (Properties.)]
     (.setProperty props "javax.sip.STACK_NAME" name)
@@ -134,37 +132,34 @@
   Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
   an exception will be thrown."
   {:added "0.2.0"}
-  [& processors]
-  {:pre [(even? (count processors))
-         (check-optional processors :request fn?)
-         (check-optional processors :response fn?)
-         (check-optional processors :timeout fn?)
-         (check-optional processors :io-exception fn?)
-         (check-optional processors :transaction-terminated fn?)
-         (check-optional processors :dialog-terminated fn?)]}
+  [& {:keys [request response timeout io-exception transaction-terminated dialog-terminated]}]
+  {:pre [(or (nil? request) (fn? request))
+         (or (nil? response) (fn? response))
+         (or (nil? timeout) (fn? timeout))
+         (or (nil? io-exception) (fn? io-exception))
+         (or (nil? transaction-terminated) (fn? transaction-terminated))
+         (or (nil? dialog-terminated) (fn? dialog-terminated))]}
   (.addSipListener (sip-provider)
-    (let [{:keys [request response timeout io-exception
-                  transaction-terminated dialog-terminated]} (apply array-map processors)]
-      (reify SipListener
-        (processRequest [this event]
-          (trace-call request event {:request (.getRequest event)
-                                     :server-transaction (.getServerTransaction event)
-                                     :dialog (.getDialog event)}))
-        (processResponse [this event]
-          (trace-call response event {:response (.getResponse event)
-                                      :client-transaction (.getClientTransaction event)
-                                      :dialog (.getDialog event)}))
-        (processIOException [this event]
-          (trace-call io-exception event {:host (.getHost event)
-                                          :port (.getPort event)
-                                          :transport (.getTransport event)}))
-        (processTimeout [this event]
-          (trace-call timeout event {:transaction (trans-from-event event)
-                                     :timeout (.. event (getTimeout) (getValue))}))
-        (processTransactionTerminated [this event]
-          (trace-call transaction-terminated event (trans-from-event event)))
-        (processDialogTerminated [this event]
-          (trace-call dialog-terminated event (.getDialog event)))))))
+    (reify SipListener
+      (processRequest [this event]
+        (trace-call request event {:request (.getRequest event)
+                                   :server-transaction (.getServerTransaction event)
+                                   :dialog (.getDialog event)}))
+      (processResponse [this event]
+        (trace-call response event {:response (.getResponse event)
+                                    :client-transaction (.getClientTransaction event)
+                                    :dialog (.getDialog event)}))
+      (processIOException [this event]
+        (trace-call io-exception event {:host (.getHost event)
+                                        :port (.getPort event)
+                                        :transport (.getTransport event)}))
+      (processTimeout [this event]
+        (trace-call timeout event {:transaction (trans-from-event event)
+                                   :timeout (.. event (getTimeout) (getValue))}))
+      (processTransactionTerminated [this event]
+        (trace-call transaction-terminated event (trans-from-event event)))
+      (processDialogTerminated [this event]
+        (trace-call dialog-terminated event (.getDialog event))))))
 
 (defn start!
   "Start to run the stack which bound with current bound provider."
@@ -206,8 +201,21 @@
   [request]
   (.getNewClientTransaction (sip-provider) request))
 
+(defn transaction?
+  "Check the obj is an instance of javax.sip.Transaction.
+  Both ClientTransaction and ServerTransaction are pass."
+  {:added "0.4.0"}
+  [object]
+  (instance? Transaction object))
+
 (defn new-dialog!
   "Create a dialog for the given transaction."
   {:added "0.2.0"}
   [transaction]
   (.getNewDialog (sip-provider) transaction))
+
+(defn dialog?
+  "Check the obj is an instance of javax.sip.Dialog"
+  {:added "0.4.0"}
+  [object]
+  (instance? Dialog object))

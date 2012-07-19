@@ -1,5 +1,5 @@
-(ns ^{:doc "place doc string here"
-      :author "ruiyun"}
+(ns ^{:author "ruiyun"
+      :added "0.2.0"}
   cljain.sip.header
   (:refer-clojure :exclude [replace reverse require])
   (:use     clojure.string
@@ -9,7 +9,7 @@
             [javax.sip.address Address URI]
             [gov.nist.javax.sip Utils]))
 
-(def ^{:doc "place doc string here"
+(def ^{:doc "The factory to create sip headers."
        :added "0.2.0"
        :private true}
   factory (.createHeaderFactory sip-factory))
@@ -127,8 +127,9 @@
   (.createHeader factory name (str value)))
 
 (defn get-address
-  "place doc string here"
-  {:added "0.2.0"}
+  "DEPRECATED: Use Java method 'getAddress' directly instead."
+  {:added "0.2.0"
+   :deprecated "0.4.0"}
   [^HeaderAddress header]
   (.getAddress header))
 
@@ -139,7 +140,9 @@
   (instance? Header object))
 
 (defn sequence-number
-  "Get the sequence number from a CSeq header."
-  {:added "0.3.0"}
+  "DEPRECATED: Use Java method 'getSequenceNumber' directly instead.
+  Get the sequence number from a CSeq header."
+  {:added "0.3.0"
+   :deprecated "0.4.0"}
   [header]
   (.getSequenceNumber header))

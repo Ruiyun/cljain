@@ -1,8 +1,25 @@
-(ns ^{:doc "place doc string here"
-      :author "ruiyun"}
+(ns ^{:doc "DSL for sip
+            Here is a simplest example show how to use it:
+
+              (use 'cljain.dum)
+              (require '[cljain.sip.core :as sip])
+
+              (def-request-handler :MESSAGE [request transaction dialog]
+                (send-response! 200 :in transaction :pack \"I receive your message.\"))
+
+              (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"127.0.0.1\" 5060 \"udp\"))
+              (initialize! :user \"bob\" :domain \"home\" :display-name \"Bob\")
+              (sip/start!)
+
+              (send-request! :MESSAGE :to #sip/address \"sip:alice@dreamland.com\" :pack \"Hello, Alice.\"
+                :on-success (fn [_ _ _] (println \"Message has been sent successfully.\"))
+                :on-failure (fn [_ _ response] (println \"oops!\" (.getStatusCode response)))
+                :on-timeout (fn [_] (println \"Timeout, try it later.\")))"
+      :author "ruiyun"
+      :added "0.2.0"
+      :deprecated "0.4.0"}
   cljain.dum
-  (:use     cljain.tools.predicate
-            [clojure.string :only [upper-case]])
+  (:use [clojure.string :only [upper-case]])
   (:require [cljain.sip.core :as core]
             [cljain.sip.header :as header]
             [cljain.sip.address :as addr]
@@ -91,14 +108,12 @@
 (defn initialize!
   "Set the default user account information with the current bound provider."
   {:added "0.2.0"}
-  [& account-info]
-  {:pre [(even? (count account-info))
-         (check-optional account-info :user string?)
-         (check-optional account-info :domain string?)
-         (check-optional account-info :display-name string?)]}
-  (let [{:keys [user domain display-name]} (apply array-map account-info)]
-    (reset! account-map {:user user, :domain domain, :display-name display-name}))
-  (install-event-handler))
+  [& {:keys [user domain display-name]}]
+  (reset! account-map {:user user, :domain domain, :display-name display-name})
+  (install-event-handler)
+  ;; add the #sip/address reader literals
+  ;; usage: #sip/address "sip:localhost:5060;transport=udp"
+  (.bindRoot #'default-data-readers (assoc default-data-readers 'sip/address #'cljain.sip.address/str->address)))
 
 (defn finalize!
   "Clean user account information with the current bound provider."
@@ -106,7 +121,8 @@
   []
   {:pre [(core/provider-can-be-found?)]}
   (reset! account-map {})
-  (reset! request-handlers-map {}))
+  (reset! request-handlers-map {})
+  (.bindRoot #'default-data-readers (dissoc default-data-readers 'sip/address)))
 
 (defn legal-content?
   "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
@@ -149,28 +165,28 @@
    :sub-type \"pidf-diff+xml\"
    :content content-object}"
   {:added "0.2.0"}
-  [message & options]
+  [message & {content :pack
+              to-address :to
+              from-address :from
+              transport :use
+              dialog :in
+              more-headers :more-headers
+              on-success :on-success
+              on-failure :on-failure
+              on-timeout :on-timeout}]
   {:pre [(core/provider-can-be-found?)
-         (even? (count options))
-         (check-optional options :pack legal-content?)
-         (check-optional options :to addr/address?)
-         (check-optional options :from addr/address?)
-         (check-optional options :use :by upper-case in? ["UDP" "TCP"])
-         (check-optional options :in dlg/dialog?)
-         (check-optional options :more-headers sequential?)
-         (check-optional options :on-success fn?)
-         (check-optional options :on-failure fn?)
-         (check-optional options :on-timeout fn?)]}
-  (let [{content :pack
-         to-address :to
-         from-address :from
-         transport :use
-         dialog :in
-         more-headers :more-headers
-         on-success :on-success
-         on-failure :on-failure
-         on-timeout :on-timeout} (apply array-map options)
-        {:keys [user domain display-name]} (account)
+         (not-empty @account-map)
+         (or (nil? content) (legal-content? content))
+         (or (and (= (upper-case (name message)) "REGISTER") (nil? to-address))
+           (addr/address? to-address))
+         (or (nil? from-address) (addr/address? from-address))
+         (or (nil? transport) (#{"UDP" "udp" "TCP" "tcp"} transport))
+         (or (nil? dialog) (core/dialog? dialog))
+         (or (nil? more-headers) (sequential? more-headers))
+         (or (nil? on-success) (fn? on-success))
+         (or (nil? on-failure) (fn? on-failure))
+         (or (nil? on-timeout) (fn? on-timeout))]}
+  (let [{:keys [user domain display-name]} (account)
         {:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
                                       (core/listening-point transport))
@@ -202,15 +218,14 @@
 (defn send-response!
   "Send response with a server transactions."
   {:added "0.2.0"}
-  [status-code & options]
+  [status-code & {transaction :in, content :pack, transport :use, more-headers :more-headers}]
   {:pre [(core/provider-can-be-found?)
-         (even? (count options))
-         (check-required options :in trans/transaction?)
-         (check-optional options :pack legal-content?)
-         (check-optional options :use :by upper-case in? ["UDP" "TCP"])
-         (check-optional options :more-headers vector?)]}
-  (let [{transaction :in, content :pack, transport :use, more-headers :more-headers} (apply array-map options)
-        {:keys [ip port transport]} (if (nil? transport)
+         (not-empty @account-map)
+         (core/transaction? transaction)
+         (or (nil? content) (legal-content? content))
+         (or (nil? transport) (#{"UDP" "udp" "TCP" "tcp"} transport))
+         (or (nil? more-headers) (sequential? more-headers))]}
+  (let [{:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
                                       (core/listening-point transport))
         user            (:user (account))
@@ -233,16 +248,14 @@
   timer will be started. Application can choose to stop it use 'stop-refresh-register', or
   let it auto retry after expires secondes."
   {:added "0.3.0"}
-  [registry-address expires-seconds & event-handlers]
+  [registry-address expires-seconds & {:keys [on-success on-failure on-refreshed on-refresh-failed]}]
   {:pre [(addr/address? registry-address)
          (> expires-seconds 38) ; because a transaction timeout is 32 seconds
-         (even? (count event-handlers))
-         (check-optional event-handlers :on-success fn?)
-         (check-optional event-handlers :on-failure fn?)
-         (check-optional event-handlers :on-refreshed fn?)
-         (check-optional event-handlers :on-refresh-failed fn?)]}
-  (let [{:keys [on-success on-failure on-refreshed on-refresh-failed]} (apply array-map event-handlers)
-        expires-header              (header/expires expires-seconds)
+         (or (nil? on-success) (fn? on-success))
+         (or (nil? on-failure) (fn? on-failure))
+         (or (nil? on-refreshed) (fn? on-refreshed))
+         (or (nil? on-refresh-failed) (fn? on-refresh-failed))]}
+  (let [expires-header              (header/expires expires-seconds)
         safer-interval-milliseconds (* (- expires-seconds 5) 1000)
         register-ctx                (get @register-ctx-map registry-address)]
     (when (nil? register-ctx)
