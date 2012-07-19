@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>cljain.sip.dialog - cljain API documentation</title>
+    <title>cljain.tools.timer - cljain API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -52,123 +52,74 @@ namespace.
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
     <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/ack">ack</a>
+      <a href="#cljain.tools.timer/cancel!">cancel!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/application-data">application-data</a>
+      <a href="#cljain.tools.timer/deamon-timer">deamon-timer</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/create-request">create-request</a>
+      <a href="#cljain.tools.timer/task">task</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/dialog?">dialog?</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/send-ack!">send-ack!</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/send-request!">send-request!</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.dialog/set-application-data">set-application-data</a>
+      <a href="#cljain.tools.timer/timer">timer</a>
     </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.sip.dialog</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.tools.timer</span>
   - <span id="header-project">cljain</span> <span id="header-version"></span>
   </h1>
 <span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
-<br />Full namespace name: <span id="long-name">cljain.sip.dialog</span>
+<br />Full namespace name: <span id="long-name">cljain.tools.timer</span>
 <p></p>
 <h2>Overview</h2>
-<pre id="namespace-docstr"></pre>
-<span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-<span class="ns-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+<pre id="namespace-docstr">place doc string here</pre>
+
+
 <br />
 <h2>Public Variables and Functions</h2>
 <div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.dialog/ack">ack</h2>
+  <h2 id="cljain.tools.timer/cancel!">cancel!</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (ack dialog seq-num)
+  <pre id="var-usage">Usage: (cancel! timer)
 </pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'createAck' directly instead.
-Creates an ACK request for an Invite that was responded with 2xx response.
-The cseq number for the invite is supplied to relate the ACK to its original invite request.</pre>
+  <pre id="var-docstr">Terminates a timer, discarding any currently scheduled tasks.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+  
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.dialog/application-data">application-data</h2>
+  <h2 id="cljain.tools.timer/deamon-timer">deamon-timer</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (application-data dialog)
+  <pre id="var-usage">Usage: (deamon-timer)
 </pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'getApplicationData' directly instead.
-Gets the application specific data specific to this dialog.</pre>
+  <pre id="var-docstr">Create a new java.util.Timer object with deamon option.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+  
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.dialog/create-request">create-request</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (create-request dialog method)
+  <h2 id="cljain.tools.timer/task">task</h2>
+  <span id="var-type">macro</span><br />
+  <pre id="var-usage">Usage: (task body*)
 </pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'createRequest' directly instead.
-Creates a new Request message based on the dialog creating request.</pre>
+  <pre id="var-docstr">Create a java.util.TimerTask object with some code.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+  
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.dialog/dialog?">dialog?</h2>
+  <h2 id="cljain.tools.timer/timer">timer</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (dialog? object)
+  <pre id="var-usage">Usage: (timer)
+       (timer name)
 </pre>
-  <pre id="var-docstr">DEPRECATED: Use 'cljain.core/dialog?' instead.
-Check the obj is an instance of javax.sip.Dialog</pre>
+  <pre id="var-docstr">Create a new java.util.Timer object.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="cljain.sip.dialog/send-ack!">send-ack!</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (send-ack! dialog ack)
-</pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'sendAck' directly instead.
-Sends ACK Request to the remote party of this dialog.
-This method implies that the application is functioning as User Agent Client
-hence the underlying SipProvider acts statefully.
-This method does not increment the local sequence number.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
-  
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="cljain.sip.dialog/send-request!">send-request!</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (send-request! dialog transaction)
-</pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'sendRequest' directly instead.
-Sends a Request to the remote party of this dialog.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
-  
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="cljain.sip.dialog/set-application-data">set-application-data</h2>
-  <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (set-application-data dialog data)
-</pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'setApplicationData' directly instead.
-Sets application specific data to this dialog.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div>
 

@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
       </ul>
     </div>
     
@@ -55,6 +55,8 @@ namespace.
       <a href="#cljain.sip.core/*sip-provider*">*sip-provider*</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.core/already-bound-provider?">already-bound-provider?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/dialog?">dialog?</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.core/gen-call-id-header">gen-call-id-header</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
@@ -89,6 +91,8 @@ namespace.
       <a href="#cljain.sip.core/start!">start!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.core/stop-and-release!">stop-and-release!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.core/transaction?">transaction?</a>
     </div>
     <br />
   </div>
@@ -101,8 +105,8 @@ namespace.
 <br />Full namespace name: <span id="long-name">cljain.sip.core</span>
 <p></p>
 <h2>Overview</h2>
-<pre id="namespace-docstr">place doc string here</pre>
-
+<pre id="namespace-docstr"></pre>
+<span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
 
 <br />
 <h2>Public Variables and Functions</h2>
@@ -126,6 +130,17 @@ please binding *sip-provider* with the current provider object first.</pre>
 </pre>
   <pre id="var-docstr">Check whether the *sip-provider* has been bound in current thread.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/dialog?">dialog?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (dialog? object)
+</pre>
+  <pre id="var-docstr">Check the obj is an instance of javax.sip.Dialog</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.4.0</span><br /></span>
   
   
 </div><div id="var-entry">
@@ -235,7 +250,7 @@ that does not match an existing server transaction.</pre>
   <hr />
   <h2 id="cljain.sip.core/set-listener!">set-listener!</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (set-listener! &amp; processors)
+  <pre id="var-usage">Usage: (set-listener! &amp; {:keys [request response timeout io-exception transaction-terminated dialog-terminated]})
 </pre>
   <pre id="var-docstr">Set several event listening function to current bound provider.
 Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
@@ -329,6 +344,18 @@ and
 Becareful, after called 'stop!' function, all other function include 'start!' will be invalid.
 A new provider need be generated for later call.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.core/transaction?">transaction?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (transaction? object)
+</pre>
+  <pre id="var-docstr">Check the obj is an instance of javax.sip.Transaction.
+Both ClientTransaction and ServerTransaction are pass.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.4.0</span><br /></span>
   
   
 </div>

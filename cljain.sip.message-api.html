@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
       </ul>
     </div>
     
@@ -54,11 +54,19 @@ namespace.
     <div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.message/add-header!">add-header!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/content">content</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.message/header">header</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/inc-sequence-number!">inc-sequence-number!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.message/method">method</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/raw-content">raw-content</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.message/reason">reason</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.sip.message/remove-content!">remove-content!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.sip.message/remove-header!">remove-header!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
@@ -83,8 +91,8 @@ namespace.
 <br />Full namespace name: <span id="long-name">cljain.sip.message</span>
 <p></p>
 <h2>Overview</h2>
-<pre id="namespace-docstr">place doc string here</pre>
-
+<pre id="namespace-docstr"></pre>
+<span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
 
 <br />
 <h2>Public Variables and Functions</h2>
@@ -95,7 +103,8 @@ namespace.
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (add-header! message header)
 </pre>
-  <pre id="var-docstr">The Header is added to the end of the List and will appear in that order in the SIP Message.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'addHeader' directly instead.
+The Header is added to the end of the List and will appear in that order in the SIP Message.
 Required Headers that are singletons should not be added to the message as they already
 exist in the message and therefore should be changed using the 'set-header!' method.
 
@@ -103,7 +112,19 @@ This method should be used to support the special case of adding required ViaHea
 When adding a ViaHeader using this method the implementation will add the ViaHeader to the
 top of the ViaHeader list, and not the end like all other Headers.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/content">content</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (content message)
+</pre>
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getContent' directly instead.
+Gets the body content of the Message as an Object.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.3.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -112,10 +133,22 @@ top of the ViaHeader list, and not the end like all other Headers.</pre>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (header message header-name)
 </pre>
-  <pre id="var-docstr">Gets the Header of the specified name in this Message.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getHeader' directly instead.
+Gets the Header of the specified name in this Message.
 If multiple Headers of this header name exist in the message,
 the first header in the message is returned.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/inc-sequence-number!">inc-sequence-number!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (inc-sequence-number! request)
+</pre>
+  <pre id="var-docstr">Increase the sequence number of a request's CSeq header.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.3.0</span><br /></span>
   
   
 </div><div id="var-entry">
@@ -125,9 +158,22 @@ the first header in the message is returned.</pre>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (method request)
 </pre>
-  <pre id="var-docstr">Gets method string of this Request message.</pre>
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getMethod' directly instead.
+Gets method string of this Request message.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.sip.message/raw-content">raw-content</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (raw-content message)
+</pre>
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getRawContent' directly instead.
+Gets the body content of the Message as a byte array.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.3.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -143,17 +189,31 @@ the first header in the message is returned.</pre>
 </div><div id="var-entry">
   <br />
   <hr />
+  <h2 id="cljain.sip.message/remove-content!">remove-content!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (remove-content! message)
+</pre>
+  <pre id="var-docstr">DEPRECATED: Use Java method 'removeContent' directly instead.
+Removes the body content from this Message and all associated entity headers,
+if a body exists, this method returns sliently if no body exists.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.3.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
   <h2 id="cljain.sip.message/remove-header!">remove-header!</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (remove-header! message header-name)
 </pre>
-  <pre id="var-docstr">Removes the Header of the supplied name from the list of headers in this Message.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'removeHeader' directly instead.
+Removes the Header of the supplied name from the list of headers in this Message.
 If multiple headers exist then they are all removed from the header list.
 If no headers exist then this method returns silently.
 This method should not be used to remove required Headers, required Headers should be
 replaced using the 'set-header!'.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -175,7 +235,7 @@ This new Request does not contain a body.</pre>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (response status-code reqest &amp; more-headers)
 </pre>
-  <pre id="var-docstr">Creates a new Response message of type specified by the statusCode paramater,
+  <pre id="var-docstr">Creates a new Response message of type specified by the status-code paramater,
 based on a specific Request message. This new Response does not contain a body.
 Only the required headers are copied from the Request.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
@@ -188,13 +248,14 @@ Only the required headers are copied from the Request.</pre>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (set-content! message type-header content)
 </pre>
-  <pre id="var-docstr">Sets the new Header to replace existings Header of that type in the message.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'setContent' directly instead.
+Sets the new Header to replace existings Header of that type in the message.
 If the SIP message contains more than one Header of the new Header type it should
 replace the first occurance of this Header and removes all other Headers of this type.
 If no Header of this type exists this header is added to the end of the SIP Message.
 This method should be used to change required Headers and overwrite optional Headers.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -203,13 +264,14 @@ This method should be used to change required Headers and overwrite optional Hea
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (set-header! message header)
 </pre>
-  <pre id="var-docstr">Sets the new Header to replace existings Header of that type in the message.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'setHeader' directly instead.
+Sets the new Header to replace existings Header of that type in the message.
 If the SIP message contains more than one Header of the new Header type it should
 replace the first occurance of this Header and removes all other Headers of this type.
 If no Header of this type exists this header is added to the end of the SIP Message.
 This method should be used to change required Headers and overwrite optional Headers.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -218,10 +280,11 @@ This method should be used to change required Headers and overwrite optional Hea
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (status-code response)
 </pre>
-  <pre id="var-docstr">Gets the integer value of the status code of Response,
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getStatusCode' directly instead.
+Gets the integer value of the status code of Response,
 which identifies the outcome of the request to which this response is related.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div>
 

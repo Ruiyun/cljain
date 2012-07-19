@@ -3,40 +3,46 @@
    :wiki-url "cljain.dum-api.html",
    :name "cljain.dum",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc
+   "The DSL for SIP.\nHere is a simplest example show how to use it:\n\n  (use 'cljain.dum)\n  (require '[cljain.sip.core :as sip]\n    '[cljain.sip.address :as addr])\n\n  (def-request-handler :MESSAGE [request transaction dialog]\n    (println \"Received: \" (.getContent request))\n    (send-response! 200 :in transaction :pack \"I receive your message.\"))\n\n  (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))\n  (initialize! :user \"bob\" :domain \"home\" :display-name \"Bob\")\n  (sip/start!)\n\n  (send-request! :MESSAGE :to (addr/address \"sip:alice@localhost\") :pack \"Hello, Alice.\"\n    :on-success (fn [_ _ response] (println \"Fine! response: \" (.getContent response)))\n    :on-failure (fn [_ _ response] (println \"Oops!\" (.getStatusCode response)))\n    :on-timeout (fn [_] (println \"Timeout, try it later.\")))"}
   {:source-url nil,
    :wiki-url "cljain.sip.address-api.html",
    :name "cljain.sip.address",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc nil}
   {:source-url nil,
    :wiki-url "cljain.sip.core-api.html",
    :name "cljain.sip.core",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc nil}
   {:source-url nil,
    :wiki-url "cljain.sip.dialog-api.html",
    :name "cljain.sip.dialog",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc nil}
   {:source-url nil,
    :wiki-url "cljain.sip.header-api.html",
    :name "cljain.sip.header",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc nil}
   {:source-url nil,
    :wiki-url "cljain.sip.message-api.html",
    :name "cljain.sip.message",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc nil}
   {:source-url nil,
    :wiki-url "cljain.sip.transaction-api.html",
    :name "cljain.sip.transaction",
    :author "ruiyun",
-   :doc "place doc string here"}
+   :doc nil}
   {:source-url nil,
-   :wiki-url "cljain.util-api.html",
-   :name "cljain.util",
+   :wiki-url "cljain.tools.predicate-api.html",
+   :name "cljain.tools.predicate",
+   :author "ruiyun",
+   :doc nil}
+  {:source-url nil,
+   :wiki-url "cljain.tools.timer-api.html",
+   :name "cljain.tools.timer",
    :author "ruiyun",
    :doc "place doc string here"}),
  :vars
@@ -49,19 +55,7 @@
    :wiki-url "/cljain.dum-api.html#cljain.dum/account",
    :doc "Get current bound account information.",
    :var-type "function",
-   :line 23,
-   :file "src/cljain/dum.clj"}
-  {:name "account-map",
-   :namespace "cljain.dum",
-   :source-url nil,
-   :dynamic true,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url "/cljain.dum-api.html#cljain.dum/account-map",
-   :doc
-   "Store current account information, contain :user :domain :display-name",
-   :var-type "var",
-   :line 13,
+   :line 43,
    :file "src/cljain/dum.clj"}
   {:arglists ([method process-fn]),
    :name "add-handler!",
@@ -72,7 +66,7 @@
    :wiki-url "/cljain.dum-api.html#cljain.dum/add-handler!",
    :doc "Add a sip request received event handler to dum.",
    :var-type "function",
-   :line 29,
+   :line 49,
    :file "src/cljain/dum.clj"}
   {:arglists ([method [request transaction dialog] body*]),
    :name "def-request-handler",
@@ -84,7 +78,7 @@
    :doc
    "Define the handler to handle the sip request received from under layer.\n\n(def-request-handler :MESSAGE [request transaction dialog]\n  (do-somethin)\n  ...)",
    :var-type "macro",
-   :line 36,
+   :line 56,
    :file "src/cljain/dum.clj"}
   {:arglists ([]),
    :name "finalize!",
@@ -96,9 +90,9 @@
    :doc
    "Clean user account information with the current bound provider.",
    :var-type "function",
-   :line 102,
+   :line 117,
    :file "src/cljain/dum.clj"}
-  {:arglists ([& account-info]),
+  {:arglists ([& {:keys [user domain display-name]}]),
    :name "initialize!",
    :namespace "cljain.dum",
    :source-url nil,
@@ -108,7 +102,7 @@
    :doc
    "Set the default user account information with the current bound provider.",
    :var-type "function",
-   :line 90,
+   :line 110,
    :file "src/cljain/dum.clj"}
   {:arglists ([content]),
    :name "legal-content?",
@@ -120,9 +114,36 @@
    :doc
    "Check the content is a string or a map with :type, :sub-type, :length and :content keys.",
    :var-type "function",
-   :line 110,
+   :line 125,
    :file "src/cljain/dum.clj"}
-  {:arglists ([message & options]),
+  {:arglists
+   ([registry-address
+     expires-seconds
+     &
+     {:keys [on-success on-failure on-refreshed on-refresh-failed]}]),
+   :name "register-to",
+   :namespace "cljain.dum",
+   :source-url nil,
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.dum-api.html#cljain.dum/register-to",
+   :doc
+   "Send REGISTER sip message to target registry server, and auto refresh register before\nexpired.\n\nNotice: No matter the first register whether sent successfully, the register auto refresh\ntimer will be started. Application can choose to stop it use 'stop-refresh-register', or\nlet it auto retry after expires secondes.",
+   :var-type "function",
+   :line 242,
+   :file "src/cljain/dum.clj"}
+  {:arglists
+   ([message
+     &
+     {to-address :to,
+      dialog :in,
+      on-timeout :on-timeout,
+      transport :use,
+      on-success :on-success,
+      content :pack,
+      more-headers :more-headers,
+      from-address :from,
+      on-failure :on-failure}]),
    :name "send-request!",
    :namespace "cljain.dum",
    :source-url nil,
@@ -132,9 +153,15 @@
    :doc
    "Fluent style sip message send function.\n\nThe simplest example just send a trivial MESSAGE:\n(send-request! :MESSAGE :to (address (uri \"192.168.1.128\"))\n(send-request! :INFO :in dialog-with-bob)\n\nMore complicate example:\n(let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")\n      alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]\n  (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice\n    :use \"UDP\" :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %)))\n\nIf the pack content is not just a trivial string, provide a well named funciont\nto return a content map is recommended.\n{:type \"application\"\n :sub-type \"pidf-diff+xml\"\n :content content-object}",
    :var-type "function",
-   :line 132,
+   :line 147,
    :file "src/cljain/dum.clj"}
-  {:arglists ([status-code & options]),
+  {:arglists
+   ([status-code
+     &
+     {transaction :in,
+      content :pack,
+      transport :use,
+      more-headers :more-headers}]),
    :name "send-response!",
    :namespace "cljain.dum",
    :source-url nil,
@@ -143,7 +170,18 @@
    :wiki-url "/cljain.dum-api.html#cljain.dum/send-response!",
    :doc "Send response with a server transactions.",
    :var-type "function",
-   :line 202,
+   :line 216,
+   :file "src/cljain/dum.clj"}
+  {:arglists ([registry-address]),
+   :name "unregister-to",
+   :namespace "cljain.dum",
+   :source-url nil,
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.dum-api.html#cljain.dum/unregister-to",
+   :doc "Send REGISTER sip message with expires 0 for unregister.",
+   :var-type "function",
+   :line 284,
    :file "src/cljain/dum.clj"}
   {:arglists ([uri] [uri display-name]),
    :name "address",
@@ -155,7 +193,7 @@
    :doc
    "Create a new Address object using a URI.\nIt useful to create the To header etc.",
    :var-type "function",
-   :line 37,
+   :line 36,
    :file "src/cljain/sip/address.clj"}
   {:arglists ([object]),
    :name "address?",
@@ -167,9 +205,23 @@
    "/cljain.sip.address-api.html#cljain.sip.address/address?",
    :doc "Check the 'obj' is an instance of javax.sip.Address.",
    :var-type "function",
-   :line 54,
+   :line 64,
    :file "src/cljain/sip/address.clj"}
-  {:arglists ([host & options]),
+  {:arglists
+   ([host & {:keys [user port transport display-name], :as options}]),
+   :name "sip-address",
+   :namespace "cljain.sip.address",
+   :source-url nil,
+   :added "0.4.0",
+   :raw-source-url nil,
+   :wiki-url
+   "/cljain.sip.address-api.html#cljain.sip.address/sip-address",
+   :doc
+   "A convenient way to create a new Address object that limited to sip uri.\n\n(sip-address \"localhost\" :user \"tom\" :display-name \"Tom\" :port 5060 :transport \"udp\")",
+   :var-type "function",
+   :line 47,
+   :file "src/cljain/sip/address.clj"}
+  {:arglists ([host & {:keys [user port transport]}]),
    :name "sip-uri",
    :namespace "cljain.sip.address",
    :source-url nil,
@@ -177,7 +229,7 @@
    :raw-source-url nil,
    :wiki-url "/cljain.sip.address-api.html#cljain.sip.address/sip-uri",
    :doc
-   "Create a new SipURI object.\nIt is useful to create the sip ReqURI or Address.\n\n(sip-uri \"localhost\" :port 5060 :transport \"udp\" :user \"tom\")",
+   "Create a new SipURI object.\n\n(sip-uri \"localhost\" :port 5060 :transport \"udp\" :user \"tom\")",
    :var-type "function",
    :line 13,
    :file "src/cljain/sip/address.clj"}
@@ -191,19 +243,21 @@
    :doc
    "Create a new TelURI object with a phone number.\n\n(tel-uri 12345678) or (tel-uri \"12345678\")",
    :var-type "function",
-   :line 29,
+   :line 28,
    :file "src/cljain/sip/address.clj"}
   {:arglists ([address]),
    :name "uri-from-address",
    :namespace "cljain.sip.address",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.address-api.html#cljain.sip.address/uri-from-address",
-   :doc "Get the URI member from a Address object.",
+   :doc
+   "DEPRECATED: Use Java method 'getURI' directly instead.\nGet the URI member from a Address object.",
    :var-type "function",
-   :line 48,
+   :line 56,
    :file "src/cljain/sip/address.clj"}
   {:arglists ([object]),
    :name "uri?",
@@ -214,7 +268,7 @@
    :wiki-url "/cljain.sip.address-api.html#cljain.sip.address/uri?",
    :doc "Check the 'obj' is an instance of javax.sip.URI.",
    :var-type "function",
-   :line 60,
+   :line 70,
    :file "src/cljain/sip/address.clj"}
   {:name "*sip-provider*",
    :namespace "cljain.sip.core",
@@ -227,7 +281,7 @@
    :doc
    "Before call any function expect 'sip-provider!' in the cljain.sip.core namespace,\nplease binding *sip-provider* with the current provider object first.",
    :var-type "var",
-   :line 17,
+   :line 14,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "already-bound-provider?",
@@ -240,7 +294,18 @@
    :doc
    "Check whether the *sip-provider* has been bound in current thread.",
    :var-type "function",
-   :line 40,
+   :line 37,
+   :file "src/cljain/sip/core.clj"}
+  {:arglists ([object]),
+   :name "dialog?",
+   :namespace "cljain.sip.core",
+   :source-url nil,
+   :added "0.4.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/dialog?",
+   :doc "Check the obj is an instance of javax.sip.Dialog",
+   :var-type "function",
+   :line 217,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "gen-call-id-header",
@@ -252,7 +317,7 @@
    "/cljain.sip.core-api.html#cljain.sip.core/gen-call-id-header",
    :doc "Generate a new Call-ID header use current bound provider.",
    :var-type "function",
-   :line 183,
+   :line 178,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([provider]),
    :name "global-bind-sip-provider!",
@@ -264,7 +329,7 @@
    "/cljain.sip.core-api.html#cljain.sip.core/global-bind-sip-provider!",
    :doc "Bind the sip-provider in global scope.",
    :var-type "function",
-   :line 28,
+   :line 25,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "global-unbind-sip-provider!",
@@ -276,7 +341,7 @@
    "/cljain.sip.core-api.html#cljain.sip.core/global-unbind-sip-provider!",
    :doc "Unbind the sip-provider in global scope.",
    :var-type "function",
-   :line 34,
+   :line 31,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([] [transport]),
    :name "listening-point",
@@ -289,7 +354,7 @@
    :doc
    "Get the current bound listening ip, port and transport information.",
    :var-type "function",
-   :line 78,
+   :line 75,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([request]),
    :name "new-client-transcation!",
@@ -302,7 +367,7 @@
    :doc
    "Before an application can send a new request it must first request\na new client transaction to handle that Request.",
    :var-type "function",
-   :line 202,
+   :line 197,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([transaction]),
    :name "new-dialog!",
@@ -313,7 +378,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/new-dialog!",
    :doc "Create a dialog for the given transaction.",
    :var-type "function",
-   :line 209,
+   :line 211,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([request]),
    :name "new-server-transaction!",
@@ -326,7 +391,7 @@
    :doc
    "An application has the responsibility of deciding to respond to a Request\nthat does not match an existing server transaction.",
    :var-type "function",
-   :line 195,
+   :line 190,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "provider-can-be-found?",
@@ -339,7 +404,7 @@
    :doc
    "Check where the *sip-provider* has been bound or global sip-provider has been set.",
    :var-type "function",
-   :line 46,
+   :line 43,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([request]),
    :name "send-request!",
@@ -350,9 +415,17 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/send-request!",
    :doc "Send out of dialog SipRequest use current bound provider.",
    :var-type "function",
-   :line 189,
+   :line 184,
    :file "src/cljain/sip/core.clj"}
-  {:arglists ([& processors]),
+  {:arglists
+   ([&
+     {:keys
+      [request
+       response
+       timeout
+       io-exception
+       transaction-terminated
+       dialog-terminated]}]),
    :name "set-listener!",
    :namespace "cljain.sip.core",
    :source-url nil,
@@ -362,7 +435,7 @@
    :doc
    "Set several event listening function to current bound provider.\nBecause JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,\nan exception will be thrown.",
    :var-type "function",
-   :line 132,
+   :line 130,
    :file "src/cljain/sip/core.clj"}
   {:name "sip-factory",
    :namespace "cljain.sip.core",
@@ -372,7 +445,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/sip-factory",
    :doc "The instance of JAIN-SIP SipFactory.",
    :var-type "var",
-   :line 13,
+   :line 10,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "sip-provider",
@@ -383,7 +456,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/sip-provider",
    :doc "Get the current bound *sip-provider* or global-sip-provider.",
    :var-type "function",
-   :line 52,
+   :line 49,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([name ip port transport & properties]),
    :name "sip-provider!",
@@ -395,7 +468,7 @@
    :doc
    "Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.\nRember, the name must be unique to make a distinction between other provider.\nTo set standard SipStack properties, use the property's lowcase short name as keyword.\nIf want to set the nist define property, let property keys lead with 'nist'.\n\n(sip-provider \"cool-phone\" \"192.168.1.2\" 5060 \"UDP\" :outbound-proxy \"192.168.1.128\")\n\nMore SipStack properties document can be found here:\nhttp://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html\nand\nhttp://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html",
    :var-type "function",
-   :line 84,
+   :line 81,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "sip-stack",
@@ -406,7 +479,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/sip-stack",
    :doc "Get the SipStack object from a SipProvider object.",
    :var-type "function",
-   :line 60,
+   :line 57,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "stack-name",
@@ -417,7 +490,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/stack-name",
    :doc "Get the SipStack name from a SipProvider object.",
    :var-type "function",
-   :line 66,
+   :line 63,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "start!",
@@ -429,7 +502,7 @@
    :doc
    "Start to run the stack which bound with current bound provider.",
    :var-type "function",
-   :line 169,
+   :line 164,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "stop-and-release!",
@@ -442,91 +515,114 @@
    :doc
    "Stop the stack wich bound with current bound provider. And release all resource associated the stack.\nBecareful, after called 'stop!' function, all other function include 'start!' will be invalid.\nA new provider need be generated for later call.",
    :var-type "function",
-   :line 175,
+   :line 170,
+   :file "src/cljain/sip/core.clj"}
+  {:arglists ([object]),
+   :name "transaction?",
+   :namespace "cljain.sip.core",
+   :source-url nil,
+   :added "0.4.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/transaction?",
+   :doc
+   "Check the obj is an instance of javax.sip.Transaction.\nBoth ClientTransaction and ServerTransaction are pass.",
+   :var-type "function",
+   :line 204,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([dialog seq-num]),
    :name "ack",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url "/cljain.sip.dialog-api.html#cljain.sip.dialog/ack",
    :doc
-   "Creates an ACK request for an Invite that was responded with 2xx response.\nThe cseq number for the invite is supplied to relate the ACK to its original invite request.",
+   "DEPRECATED: Use Java method 'createAck' directly instead.\nCreates an ACK request for an Invite that was responded with 2xx response.\nThe cseq number for the invite is supplied to relate the ACK to its original invite request.",
    :var-type "function",
-   :line 40,
+   :line 52,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([dialog]),
    :name "application-data",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.dialog-api.html#cljain.sip.dialog/application-data",
-   :doc "Gets the application specific data specific to this dialog.",
+   :doc
+   "DEPRECATED: Use Java method 'getApplicationData' directly instead.\nGets the application specific data specific to this dialog.",
    :var-type "function",
-   :line 14,
+   :line 17,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([dialog method]),
    :name "create-request",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.dialog-api.html#cljain.sip.dialog/create-request",
    :doc
-   "Creates a new Request message based on the dialog creating request.",
+   "DEPRECATED: Use Java method 'createRequest' directly instead.\nCreates a new Request message based on the dialog creating request.",
    :var-type "function",
-   :line 26,
+   :line 33,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([object]),
    :name "dialog?",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url "/cljain.sip.dialog-api.html#cljain.sip.dialog/dialog?",
-   :doc "Check the obj is an instance of javax.sip.Dialog",
+   :doc
+   "DEPRECATED: Use 'cljain.core/dialog?' instead.\nCheck the obj is an instance of javax.sip.Dialog",
    :var-type "function",
-   :line 8,
+   :line 9,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([dialog ack]),
    :name "send-ack!",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url "/cljain.sip.dialog-api.html#cljain.sip.dialog/send-ack!",
    :doc
-   "Sends ACK Request to the remote party of this dialog.\nThis method implies that the application is functioning as User Agent Client\nhence the underlying SipProvider acts statefully.\nThis method does not increment the local sequence number.",
+   "DEPRECATED: Use Java method 'sendAck' directly instead.\nSends ACK Request to the remote party of this dialog.\nThis method implies that the application is functioning as User Agent Client\nhence the underlying SipProvider acts statefully.\nThis method does not increment the local sequence number.",
    :var-type "function",
-   :line 48,
+   :line 62,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([dialog transaction]),
    :name "send-request!",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.dialog-api.html#cljain.sip.dialog/send-request!",
-   :doc "Sends a Request to the remote party of this dialog.",
+   :doc
+   "DEPRECATED: Use Java method 'sendRequest' directly instead.\nSends a Request to the remote party of this dialog.",
    :var-type "function",
-   :line 32,
+   :line 41,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([dialog data]),
    :name "set-application-data",
    :namespace "cljain.sip.dialog",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.dialog-api.html#cljain.sip.dialog/set-application-data",
-   :doc "Sets application specific data to this dialog.",
+   :doc
+   "DEPRECATED: Use Java method 'setApplicationData' directly instead.\nSets application specific data to this dialog.",
    :var-type "function",
-   :line 20,
+   :line 25,
    :file "src/cljain/sip/dialog.clj"}
   {:arglists ([content-type sub-type]),
    :name "accept",
@@ -833,11 +929,12 @@
    :name "get-address",
    :namespace "cljain.sip.header",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.header-api.html#cljain.sip.header/get-address",
-   :doc "place doc string here",
+   :doc "DEPRECATED: Use Java method 'getAddress' directly instead.",
    :var-type "function",
    :line 129,
    :file "src/cljain/sip/header.clj"}
@@ -850,7 +947,7 @@
    :wiki-url "/cljain.sip.header-api.html#cljain.sip.header/header?",
    :doc "Check whether the object is a Header or not",
    :var-type "function",
-   :line 135,
+   :line 136,
    :file "src/cljain/sip/header.clj"}
   {:arglists ([call-id]),
    :name "in-reply-to",
@@ -1060,6 +1157,20 @@
    :var-type "function",
    :line 81,
    :file "src/cljain/sip/header.clj"}
+  {:arglists ([header]),
+   :name "sequence-number",
+   :namespace "cljain.sip.header",
+   :source-url nil,
+   :deprecated "0.4.0",
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url
+   "/cljain.sip.header-api.html#cljain.sip.header/sequence-number",
+   :doc
+   "DEPRECATED: Use Java method 'getSequenceNumber' directly instead.\nGet the sequence number from a CSeq header.",
+   :var-type "function",
+   :line 142,
+   :file "src/cljain/sip/header.clj"}
   {:arglists ([product]),
    :name "server",
    :namespace "cljain.sip.header",
@@ -1228,37 +1339,80 @@
    :name "add-header!",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.message-api.html#cljain.sip.message/add-header!",
    :doc
-   "The Header is added to the end of the List and will appear in that order in the SIP Message.\nRequired Headers that are singletons should not be added to the message as they already\nexist in the message and therefore should be changed using the 'set-header!' method.\n\nThis method should be used to support the special case of adding required ViaHeaders to a message.\nWhen adding a ViaHeader using this method the implementation will add the ViaHeader to the\ntop of the ViaHeader list, and not the end like all other Headers.",
+   "DEPRECATED: Use Java method 'addHeader' directly instead.\nThe Header is added to the end of the List and will appear in that order in the SIP Message.\nRequired Headers that are singletons should not be added to the message as they already\nexist in the message and therefore should be changed using the 'set-header!' method.\n\nThis method should be used to support the special case of adding required ViaHeaders to a message.\nWhen adding a ViaHeader using this method the implementation will add the ViaHeader to the\ntop of the ViaHeader list, and not the end like all other Headers.",
    :var-type "function",
-   :line 64,
+   :line 68,
+   :file "src/cljain/sip/message.clj"}
+  {:arglists ([message]),
+   :name "content",
+   :namespace "cljain.sip.message",
+   :source-url nil,
+   :deprecated "0.4.0",
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.sip.message-api.html#cljain.sip.message/content",
+   :doc
+   "DEPRECATED: Use Java method 'getContent' directly instead.\nGets the body content of the Message as an Object.",
+   :var-type "function",
+   :line 96,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([message header-name]),
    :name "header",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url "/cljain.sip.message-api.html#cljain.sip.message/header",
    :doc
-   "Gets the Header of the specified name in this Message.\nIf multiple Headers of this header name exist in the message,\nthe first header in the message is returned.",
+   "DEPRECATED: Use Java method 'getHeader' directly instead.\nGets the Header of the specified name in this Message.\nIf multiple Headers of this header name exist in the message,\nthe first header in the message is returned.",
    :var-type "function",
-   :line 46,
+   :line 45,
+   :file "src/cljain/sip/message.clj"}
+  {:arglists ([request]),
+   :name "inc-sequence-number!",
+   :namespace "cljain.sip.message",
+   :source-url nil,
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url
+   "/cljain.sip.message-api.html#cljain.sip.message/inc-sequence-number!",
+   :doc "Increase the sequence number of a request's CSeq header.",
+   :var-type "function",
+   :line 157,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([request]),
    :name "method",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url "/cljain.sip.message-api.html#cljain.sip.message/method",
-   :doc "Gets method string of this Request message.",
+   :doc
+   "DEPRECATED: Use Java method 'getMethod' directly instead.\nGets method string of this Request message.",
    :var-type "function",
-   :line 96,
+   :line 134,
+   :file "src/cljain/sip/message.clj"}
+  {:arglists ([message]),
+   :name "raw-content",
+   :namespace "cljain.sip.message",
+   :source-url nil,
+   :deprecated "0.4.0",
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url
+   "/cljain.sip.message-api.html#cljain.sip.message/raw-content",
+   :doc
+   "DEPRECATED: Use Java method 'getRawContent' directly instead.\nGets the body content of the Message as a byte array.",
+   :var-type "function",
+   :line 104,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([response]),
    :name "reason",
@@ -1269,20 +1423,35 @@
    :wiki-url "/cljain.sip.message-api.html#cljain.sip.message/reason",
    :doc "Gets the reason phrase of this Response message.",
    :var-type "function",
-   :line 109,
+   :line 151,
+   :file "src/cljain/sip/message.clj"}
+  {:arglists ([message]),
+   :name "remove-content!",
+   :namespace "cljain.sip.message",
+   :source-url nil,
+   :deprecated "0.4.0",
+   :added "0.3.0",
+   :raw-source-url nil,
+   :wiki-url
+   "/cljain.sip.message-api.html#cljain.sip.message/remove-content!",
+   :doc
+   "DEPRECATED: Use Java method 'removeContent' directly instead.\nRemoves the body content from this Message and all associated entity headers,\nif a body exists, this method returns sliently if no body exists.",
+   :var-type "function",
+   :line 125,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([message header-name]),
    :name "remove-header!",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.message-api.html#cljain.sip.message/remove-header!",
    :doc
-   "Removes the Header of the supplied name from the list of headers in this Message.\nIf multiple headers exist then they are all removed from the header list.\nIf no headers exist then this method returns silently.\nThis method should not be used to remove required Headers, required Headers should be\nreplaced using the 'set-header!'.",
+   "DEPRECATED: Use Java method 'removeHeader' directly instead.\nRemoves the Header of the supplied name from the list of headers in this Message.\nIf multiple headers exist then they are all removed from the header list.\nIf no headers exist then this method returns silently.\nThis method should not be used to remove required Headers, required Headers should be\nreplaced using the 'set-header!'.",
    :var-type "function",
-   :line 76,
+   :line 83,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([method req-uri from call-id & more-headers]),
    :name "request",
@@ -1294,7 +1463,7 @@
    :doc
    "Creates a new Request message of type specified by the method paramater,\ncontaining the URI of the Request, the mandatory headers of the message.\nThis new Request does not contain a body.",
    :var-type "function",
-   :line 16,
+   :line 15,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([status-code reqest & more-headers]),
    :name "response",
@@ -1305,181 +1474,241 @@
    :wiki-url
    "/cljain.sip.message-api.html#cljain.sip.message/response",
    :doc
-   "Creates a new Response message of type specified by the statusCode paramater,\nbased on a specific Request message. This new Response does not contain a body.\nOnly the required headers are copied from the Request.",
+   "Creates a new Response message of type specified by the status-code paramater,\nbased on a specific Request message. This new Response does not contain a body.\nOnly the required headers are copied from the Request.",
    :var-type "function",
-   :line 33,
+   :line 32,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([message type-header content]),
    :name "set-content!",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.message-api.html#cljain.sip.message/set-content!",
    :doc
-   "Sets the new Header to replace existings Header of that type in the message.\nIf the SIP message contains more than one Header of the new Header type it should\nreplace the first occurance of this Header and removes all other Headers of this type.\nIf no Header of this type exists this header is added to the end of the SIP Message.\nThis method should be used to change required Headers and overwrite optional Headers.",
+   "DEPRECATED: Use Java method 'setContent' directly instead.\nSets the new Header to replace existings Header of that type in the message.\nIf the SIP message contains more than one Header of the new Header type it should\nreplace the first occurance of this Header and removes all other Headers of this type.\nIf no Header of this type exists this header is added to the end of the SIP Message.\nThis method should be used to change required Headers and overwrite optional Headers.",
    :var-type "function",
-   :line 86,
+   :line 112,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([message header]),
    :name "set-header!",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.message-api.html#cljain.sip.message/set-header!",
    :doc
-   "Sets the new Header to replace existings Header of that type in the message.\nIf the SIP message contains more than one Header of the new Header type it should\nreplace the first occurance of this Header and removes all other Headers of this type.\nIf no Header of this type exists this header is added to the end of the SIP Message.\nThis method should be used to change required Headers and overwrite optional Headers.",
+   "DEPRECATED: Use Java method 'setHeader' directly instead.\nSets the new Header to replace existings Header of that type in the message.\nIf the SIP message contains more than one Header of the new Header type it should\nreplace the first occurance of this Header and removes all other Headers of this type.\nIf no Header of this type exists this header is added to the end of the SIP Message.\nThis method should be used to change required Headers and overwrite optional Headers.",
    :var-type "function",
-   :line 54,
+   :line 55,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([response]),
    :name "status-code",
    :namespace "cljain.sip.message",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.message-api.html#cljain.sip.message/status-code",
    :doc
-   "Gets the integer value of the status code of Response,\nwhich identifies the outcome of the request to which this response is related.",
+   "DEPRECATED: Use Java method 'getStatusCode' directly instead.\nGets the integer value of the status code of Response,\nwhich identifies the outcome of the request to which this response is related.",
    :var-type "function",
-   :line 102,
+   :line 142,
    :file "src/cljain/sip/message.clj"}
   {:arglists ([transaction]),
    :name "application-data",
    :namespace "cljain.sip.transaction",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/application-data",
    :doc
-   "Returns the application data associated with the transaction.\nThis specification does not define the format of this application specific data.",
+   "DEPRECATED: Use Java method 'getApplicationData' directly instead.\nReturns the application data associated with the transaction.\nThis specification does not define the format of this application specific data.",
    :var-type "function",
-   :line 57,
+   :line 66,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([transaction]),
    :name "branch-id",
    :namespace "cljain.sip.transaction",
    :source-url nil,
-   :added "VERSION",
+   :deprecated "0.4.0",
+   :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/branch-id",
    :doc
-   "Returns a unique branch identifer that identifies this transaction.\nThe branch identifier is used in the ViaHeader. The uniqueness property of the\nbranch ID parameter to facilitate its use as a transaction ID, was not part of RFC 2543.\nThe branch ID inserted by an element compliant with the RFC3261 specification MUST always\nbegin with the characters \"z9hG4bK\". These 7 characters are used as a magic cookie,\nso that servers receiving the request can determine that the branch ID was constructed\nto be globally unique. The precise format of the branch token is implementation-defined.\nThis method should always return the same branch identifier for the same transaction.",
+   "DEPRECATED: Use Java method 'getBranchId' directly instead.\nReturns a unique branch identifer that identifies this transaction.\nThe branch identifier is used in the ViaHeader. The uniqueness property of the\nbranch ID parameter to facilitate its use as a transaction ID, was not part of RFC 2543.\nThe branch ID inserted by an element compliant with the RFC3261 specification MUST always\nbegin with the characters \"z9hG4bK\". These 7 characters are used as a magic cookie,\nso that servers receiving the request can determine that the branch ID was constructed\nto be globally unique. The precise format of the branch token is implementation-defined.\nThis method should always return the same branch identifier for the same transaction.",
    :var-type "function",
-   :line 70,
+   :line 84,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([transaction]),
    :name "request",
    :namespace "cljain.sip.transaction",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/request",
    :doc
-   "Returns the request that created this transaction.\nThe transaction state machine needs to keep the Request that resulted in the creation\nof this transaction while the transaction is still alive. Applications also need to access\nthis information, e.g. a forking proxy server may wish to retrieve the original Invite\nrequest to cancel branches of a fork when a final Response has been received by one branch.",
+   "DEPRECATED: Use Java method 'getRequest' directly instead.\nReturns the request that created this transaction.\nThe transaction state machine needs to keep the Request that resulted in the creation\nof this transaction while the transaction is still alive. Applications also need to access\nthis information, e.g. a forking proxy server may wish to retrieve the original Invite\nrequest to cancel branches of a fork when a final Response has been received by one branch.",
    :var-type "function",
-   :line 7,
+   :line 8,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([client-transaction]),
    :name "send-request!",
    :namespace "cljain.sip.transaction",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/send-request!",
    :doc
-   "Sends the Request which created this ClientTransaction.\nWhen an application wishes to send a Request message, it creates a Request from the\nMessageFactory and then creates a new ClientTransaction from 'cljain.core/new-client-transcation!'.\nCalling this method on the ClientTransaction sends the Request onto the network.\nThe Request message gets sent via the ListeningPoint information of the SipProvider that\nis associated to this ClientTransaction.\n\nThis method assumes that the Request is sent out of Dialog.\nIt uses the Router to determine the next hop. If the Router returns a empty iterator,\nand a Dialog is associated with the outgoing request of the Transaction then the Dialog route set\nis used to send the outgoing request.\n\nThis method implies that the application is functioning as either a UAC or a stateful proxy,\nhence the underlying implementation acts statefully.",
+   "DEPRECATED: Use Java method 'sendRequest' directly instead.\nSends the Request which created this ClientTransaction.\nWhen an application wishes to send a Request message, it creates a Request from the\nMessageFactory and then creates a new ClientTransaction from 'cljain.core/new-client-transcation!'.\nCalling this method on the ClientTransaction sends the Request onto the network.\nThe Request message gets sent via the ListeningPoint information of the SipProvider that\nis associated to this ClientTransaction.\n\nThis method assumes that the Request is sent out of Dialog.\nIt uses the Router to determine the next hop. If the Router returns a empty iterator,\nand a Dialog is associated with the outgoing request of the Transaction then the Dialog route set\nis used to send the outgoing request.\n\nThis method implies that the application is functioning as either a UAC or a stateful proxy,\nhence the underlying implementation acts statefully.",
    :var-type "function",
-   :line 17,
+   :line 20,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([server-transaction response]),
    :name "send-response!",
    :namespace "cljain.sip.transaction",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/send-response!",
    :doc
-   "Sends the Response to a Request which is associated with this ServerTransaction.\nWhen an application wishes to send a Response, it creates a Response using the\nMessageFactory and then passes that Response to this method. The Response message\ngets sent out on the network via the ListeningPoint information that is associated\nwith the SipProvider of this ServerTransaction.\n\nThis method implies that the application is functioning as either a UAS or\na stateful proxy, hence the underlying implementation acts statefully.\nWhen a UAS sends a 2xx response to an INVITE, the server transaction is\ntransitions to the TerminatedState. The implementation may delay physically\nremoving ServerTransaction record from memory to catch retransmissions of the INVITE\nin accordance with the reccomendation of http://bugs.sipit.net/show_bug.cgi?id=769 .",
+   "DEPRECATED: Use Java method 'sendResponse' directly instead.\nSends the Response to a Request which is associated with this ServerTransaction.\nWhen an application wishes to send a Response, it creates a Response using the\nMessageFactory and then passes that Response to this method. The Response message\ngets sent out on the network via the ListeningPoint information that is associated\nwith the SipProvider of this ServerTransaction.\n\nThis method implies that the application is functioning as either a UAS or\na stateful proxy, hence the underlying implementation acts statefully.\nWhen a UAS sends a 2xx response to an INVITE, the server transaction is\ntransitions to the TerminatedState. The implementation may delay physically\nremoving ServerTransaction record from memory to catch retransmissions of the INVITE\nin accordance with the reccomendation of http://bugs.sipit.net/show_bug.cgi?id=769 .",
    :var-type "function",
-   :line 38,
+   :line 44,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([transaction data]),
    :name "set-application-data!",
    :namespace "cljain.sip.transaction",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/set-application-data!",
    :doc
-   "This method allows applications to associate application context with the transaction.",
+   "DEPRECATED: Use Java method 'setApplicationData' directly instead.\nThis method allows applications to associate application context with the transaction.",
    :var-type "function",
-   :line 64,
+   :line 75,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([object]),
    :name "transaction?",
    :namespace "cljain.sip.transaction",
    :source-url nil,
+   :deprecated "0.4.0",
    :added "0.2.0",
    :raw-source-url nil,
    :wiki-url
    "/cljain.sip.transaction-api.html#cljain.sip.transaction/transaction?",
    :doc
-   "Check the obj is an instance of javax.sip.Transaction.\nBoth ClientTransaction and ServerTransaction are pass.",
+   "DEPRECATED: Use 'cljain.core/transaction?' instead.\nCheck the obj is an instance of javax.sip.Transaction.\nBoth ClientTransaction and ServerTransaction are pass.",
    :var-type "function",
-   :line 83,
+   :line 99,
    :file "src/cljain/sip/transaction.clj"}
   {:arglists ([options option-key :by? option-modifier? f & args]),
    :name "check-optional",
-   :namespace "cljain.util",
+   :namespace "cljain.tools.predicate",
    :source-url nil,
    :added "0.2.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.util-api.html#cljain.util/check-optional",
+   :wiki-url
+   "/cljain.tools.predicate-api.html#cljain.tools.predicate/check-optional",
    :doc "place doc string here",
    :var-type "macro",
-   :line 41,
-   :file "src/cljain/util.clj"}
+   :line 42,
+   :file "src/cljain/tools/predicate.clj"}
   {:arglists ([options option-key :by? option-modifier? f & args]),
    :name "check-required",
-   :namespace "cljain.util",
+   :namespace "cljain.tools.predicate",
    :source-url nil,
    :added "0.2.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.util-api.html#cljain.util/check-required",
+   :wiki-url
+   "/cljain.tools.predicate-api.html#cljain.tools.predicate/check-required",
    :doc "place doc string here",
    :var-type "macro",
-   :line 34,
-   :file "src/cljain/util.clj"}
+   :line 35,
+   :file "src/cljain/tools/predicate.clj"}
   {:arglists ([v coll]),
    :name "in?",
-   :namespace "cljain.util",
+   :namespace "cljain.tools.predicate",
    :source-url nil,
    :added "0.2.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.util-api.html#cljain.util/in?",
+   :wiki-url
+   "/cljain.tools.predicate-api.html#cljain.tools.predicate/in?",
    :doc "Chekc whether v is in the coll or not.",
    :var-type "function",
-   :line 5,
-   :file "src/cljain/util.clj"}
+   :line 6,
+   :file "src/cljain/tools/predicate.clj"}
   {:arglists ([required? & decl]),
    :name "legal-option?",
-   :namespace "cljain.util",
+   :namespace "cljain.tools.predicate",
    :source-url nil,
    :added "0.2.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.util-api.html#cljain.util/legal-option?",
+   :wiki-url
+   "/cljain.tools.predicate-api.html#cljain.tools.predicate/legal-option?",
    :doc "place doc string here",
    :var-type "macro",
-   :line 11,
-   :file "src/cljain/util.clj"})}
+   :line 12,
+   :file "src/cljain/tools/predicate.clj"}
+  {:arglists ([timer]),
+   :name "cancel!",
+   :namespace "cljain.tools.timer",
+   :source-url nil,
+   :added "0.2.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.tools.timer-api.html#cljain.tools.timer/cancel!",
+   :doc
+   "Terminates a timer, discarding any currently scheduled tasks.",
+   :var-type "function",
+   :line 68,
+   :file "src/cljain/tools/timer.clj"}
+  {:arglists ([]),
+   :name "deamon-timer",
+   :namespace "cljain.tools.timer",
+   :source-url nil,
+   :added "0.2.0",
+   :raw-source-url nil,
+   :wiki-url
+   "/cljain.tools.timer-api.html#cljain.tools.timer/deamon-timer",
+   :doc "Create a new java.util.Timer object with deamon option.",
+   :var-type "function",
+   :line 13,
+   :file "src/cljain/tools/timer.clj"}
+  {:arglists ([body*]),
+   :name "task",
+   :namespace "cljain.tools.timer",
+   :source-url nil,
+   :added "0.2.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.tools.timer-api.html#cljain.tools.timer/task",
+   :doc "Create a java.util.TimerTask object with some code.",
+   :var-type "macro",
+   :line 19,
+   :file "src/cljain/tools/timer.clj"}
+  {:arglists ([] [name]),
+   :name "timer",
+   :namespace "cljain.tools.timer",
+   :source-url nil,
+   :added "0.2.0",
+   :raw-source-url nil,
+   :wiki-url "/cljain.tools.timer-api.html#cljain.tools.timer/timer",
+   :doc "Create a new java.util.Timer object.",
+   :var-type "function",
+   :line 7,
+   :file "src/cljain/tools/timer.clj"})}

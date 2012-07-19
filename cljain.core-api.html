@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>cljain.sip.address - cljain API documentation</title>
+    <title>cljain.core - cljain API documentation</title>
     <link href="static/favicon.png" rel="icon" />
     <link href="static/favicon.png" rel="shortcut icon" />
     <link media="all" type="text/css" href="static/clojure.css" rel="stylesheet" />
@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
+        <li><a href="cljain.core-api.html" class="wiki_link">cljain.core</a></li><li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
       </ul>
     </div>
     
@@ -52,120 +52,171 @@ namespace.
   <div style="margin-left: 1em;" class="toc-section">
     <a href="#toc0">Overview</a>
     <div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/address">address</a>
+      <a href="#cljain.core/address">address</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/address?">address?</a>
+      <a href="#cljain.core/address?">address?</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/sip-address">sip-address</a>
+      <a href="#cljain.core/dialog?">dialog?</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/sip-uri">sip-uri</a>
+      <a href="#cljain.core/header?">header?</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/tel-uri">tel-uri</a>
+      <a href="#cljain.core/inc-sequence-number!">inc-sequence-number!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/uri-from-address">uri-from-address</a>
+      <a href="#cljain.core/reason">reason</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.sip.address/uri?">uri?</a>
+      <a href="#cljain.core/sip-address">sip-address</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.core/sip-uri">sip-uri</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.core/tel-uri">tel-uri</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.core/transaction?">transaction?</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.core/uri?">uri?</a>
     </div>
     <br />
   </div>
 </div>
 </div>
-                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.sip.address</span>
+                <div id="content-tag"><h1 id="overview">API for <span id="namespace-name">cljain.core</span>
   - <span id="header-project">cljain</span> <span id="header-version"></span>
   </h1>
-<span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
-<br />Full namespace name: <span id="long-name">cljain.sip.address</span>
+
+<br />Full namespace name: <span id="long-name">cljain.core</span>
 <p></p>
 <h2>Overview</h2>
 <pre id="namespace-docstr"></pre>
-<span class="ns-added"><span id="content">Added in cljain version 0.1.0</span><br /></span>
+
 
 <br />
 <h2>Public Variables and Functions</h2>
 <div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/address">address</h2>
+  <h2 id="cljain.core/address">address</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (address uri)
        (address uri display-name)
 </pre>
   <pre id="var-docstr">Create a new Address object using a URI.
 It useful to create the To header etc.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.1.0</span><br /></span>
+  
   
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/address?">address?</h2>
+  <h2 id="cljain.core/address?">address?</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (address? object)
 </pre>
   <pre id="var-docstr">Check the 'obj' is an instance of javax.sip.Address.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
   
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/sip-address">sip-address</h2>
+  <h2 id="cljain.core/dialog?">dialog?</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (sip-address host &amp; {:keys [user port transport display-name], :as options})
+  <pre id="var-usage">Usage: (dialog? obj)
 </pre>
-  <pre id="var-docstr">A convenient way to create a new Address object that limited to sip uri.
-
-(sip-address "localhost" :user "tom" :display-name "Tom" :port 5060 :transport "udp")</pre>
+  <pre id="var-docstr">Check the obj is an instance of 'javax.sip.Dialog'</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.4.0</span><br /></span>
   
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/sip-uri">sip-uri</h2>
+  <h2 id="cljain.core/header?">header?</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (header? object)
+</pre>
+  <pre id="var-docstr">Check whether the object is a Header or not</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.core/inc-sequence-number!">inc-sequence-number!</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (inc-sequence-number! request)
+</pre>
+  <pre id="var-docstr">Increase the sequence number of a request's CSeq header.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.core/reason">reason</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (reason response)
+</pre>
+  <pre id="var-docstr">Gets the reason phrase of this Response message.</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.core/sip-address">sip-address</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (sip-address host &amp; {:keys [user port transport display-name], :as options})
+</pre>
+  <pre id="var-docstr">A convenient way to create a new Address object that limited to sip uri.
+
+(sip-address "localhost" :user "tom" :display-name "Tom" :port 5060 :transport "udp")</pre>
+  
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.core/sip-uri">sip-uri</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (sip-uri host &amp; {:keys [user port transport]})
 </pre>
   <pre id="var-docstr">Create a new SipURI object.
 
 (sip-uri "localhost" :port 5060 :transport "udp" :user "tom")</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.1.0</span><br /></span>
+  
   
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/tel-uri">tel-uri</h2>
+  <h2 id="cljain.core/tel-uri">tel-uri</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (tel-uri phone-number)
 </pre>
   <pre id="var-docstr">Create a new TelURI object with a phone number.
 
 (tel-uri 12345678) or (tel-uri "12345678")</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
   
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/uri-from-address">uri-from-address</h2>
+  <h2 id="cljain.core/transaction?">transaction?</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (uri-from-address address)
+  <pre id="var-usage">Usage: (transaction? obj)
 </pre>
-  <pre id="var-docstr">DEPRECATED: Use Java method 'getURI' directly instead.
-Get the URI member from a Address object.</pre>
+  <pre id="var-docstr">Check the obj is an instance of 'javax.sip.Transaction.'</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
+  
   
 </div><div id="var-entry">
   <br />
   <hr />
-  <h2 id="cljain.sip.address/uri?">uri?</h2>
+  <h2 id="cljain.core/uri?">uri?</h2>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (uri? object)
 </pre>
   <pre id="var-docstr">Check the 'obj' is an instance of javax.sip.URI.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
   
   
 </div>

@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
       </ul>
     </div>
     
@@ -77,9 +77,9 @@ namespace.
 <br />Full namespace name: <span id="long-name">cljain.sip.transaction</span>
 <p></p>
 <h2>Overview</h2>
-<pre id="namespace-docstr">place doc string here</pre>
-
-
+<pre id="namespace-docstr"></pre>
+<span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+<span class="ns-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
 <br />
 <h2>Public Variables and Functions</h2>
 <div id="var-entry">
@@ -89,10 +89,11 @@ namespace.
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (application-data transaction)
 </pre>
-  <pre id="var-docstr">Returns the application data associated with the transaction.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getApplicationData' directly instead.
+Returns the application data associated with the transaction.
 This specification does not define the format of this application specific data.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -101,7 +102,8 @@ This specification does not define the format of this application specific data.
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (branch-id transaction)
 </pre>
-  <pre id="var-docstr">Returns a unique branch identifer that identifies this transaction.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getBranchId' directly instead.
+Returns a unique branch identifer that identifies this transaction.
 The branch identifier is used in the ViaHeader. The uniqueness property of the
 branch ID parameter to facilitate its use as a transaction ID, was not part of RFC 2543.
 The branch ID inserted by an element compliant with the RFC3261 specification MUST always
@@ -109,8 +111,8 @@ begin with the characters "z9hG4bK". These 7 characters are used as a magic cook
 so that servers receiving the request can determine that the branch ID was constructed
 to be globally unique. The precise format of the branch token is implementation-defined.
 This method should always return the same branch identifier for the same transaction.</pre>
-  <span class="var-added"><span id="content">Added in cljain version VERSION</span><br /></span>
-  
+  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -119,13 +121,14 @@ This method should always return the same branch identifier for the same transac
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (request transaction)
 </pre>
-  <pre id="var-docstr">Returns the request that created this transaction.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'getRequest' directly instead.
+Returns the request that created this transaction.
 The transaction state machine needs to keep the Request that resulted in the creation
 of this transaction while the transaction is still alive. Applications also need to access
 this information, e.g. a forking proxy server may wish to retrieve the original Invite
 request to cancel branches of a fork when a final Response has been received by one branch.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -134,7 +137,8 @@ request to cancel branches of a fork when a final Response has been received by 
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (send-request! client-transaction)
 </pre>
-  <pre id="var-docstr">Sends the Request which created this ClientTransaction.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'sendRequest' directly instead.
+Sends the Request which created this ClientTransaction.
 When an application wishes to send a Request message, it creates a Request from the
 MessageFactory and then creates a new ClientTransaction from 'cljain.core/new-client-transcation!'.
 Calling this method on the ClientTransaction sends the Request onto the network.
@@ -149,7 +153,7 @@ is used to send the outgoing request.
 This method implies that the application is functioning as either a UAC or a stateful proxy,
 hence the underlying implementation acts statefully.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -158,7 +162,8 @@ hence the underlying implementation acts statefully.</pre>
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (send-response! server-transaction response)
 </pre>
-  <pre id="var-docstr">Sends the Response to a Request which is associated with this ServerTransaction.
+  <pre id="var-docstr">DEPRECATED: Use Java method 'sendResponse' directly instead.
+Sends the Response to a Request which is associated with this ServerTransaction.
 When an application wishes to send a Response, it creates a Response using the
 MessageFactory and then passes that Response to this method. The Response message
 gets sent out on the network via the ListeningPoint information that is associated
@@ -171,7 +176,7 @@ transitions to the TerminatedState. The implementation may delay physically
 removing ServerTransaction record from memory to catch retransmissions of the INVITE
 in accordance with the reccomendation of <a href="http://bugs.sipit.net/show_bug.cgi?id=769">http://bugs.sipit.net/show_bug.cgi?id=769</a> .</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -180,9 +185,10 @@ in accordance with the reccomendation of <a href="http://bugs.sipit.net/show_bug
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (set-application-data! transaction data)
 </pre>
-  <pre id="var-docstr">This method allows applications to associate application context with the transaction.</pre>
+  <pre id="var-docstr">DEPRECATED: Use Java method 'setApplicationData' directly instead.
+This method allows applications to associate application context with the transaction.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div><div id="var-entry">
   <br />
@@ -191,10 +197,11 @@ in accordance with the reccomendation of <a href="http://bugs.sipit.net/show_bug
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (transaction? object)
 </pre>
-  <pre id="var-docstr">Check the obj is an instance of javax.sip.Transaction.
+  <pre id="var-docstr">DEPRECATED: Use 'cljain.core/transaction?' instead.
+Check the obj is an instance of javax.sip.Transaction.
 Both ClientTransaction and ServerTransaction are pass.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
+  <span class="var-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
   
 </div>
 

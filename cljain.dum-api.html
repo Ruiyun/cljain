@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.util-api.html" class="wiki_link">cljain.util</a></li>
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
       </ul>
     </div>
     
@@ -54,8 +54,6 @@ namespace.
     <div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.dum/account">account</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
-      <a href="#cljain.dum/account-map">account-map</a>
-    </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.dum/add-handler!">add-handler!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.dum/def-request-handler">def-request-handler</a>
@@ -66,9 +64,13 @@ namespace.
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.dum/legal-content?">legal-content?</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/register-to">register-to</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.dum/send-request!">send-request!</a>
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a href="#cljain.dum/send-response!">send-response!</a>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a href="#cljain.dum/unregister-to">unregister-to</a>
     </div>
     <br />
   </div>
@@ -81,8 +83,26 @@ namespace.
 <br />Full namespace name: <span id="long-name">cljain.dum</span>
 <p></p>
 <h2>Overview</h2>
-<pre id="namespace-docstr">place doc string here</pre>
+<pre id="namespace-docstr">The DSL for SIP.
+Here is a simplest example show how to use it:
 
+  (use 'cljain.dum)
+  (require '[cljain.sip.core :as sip]
+    '[cljain.sip.address :as addr])
+
+  (def-request-handler :MESSAGE [request transaction dialog]
+    (println "Received: " (.getContent request))
+    (send-response! 200 :in transaction :pack "I receive your message."))
+
+  (sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "localhost" 5060 "udp"))
+  (initialize! :user "bob" :domain "home" :display-name "Bob")
+  (sip/start!)
+
+  (send-request! :MESSAGE :to (addr/address "sip:alice@localhost") :pack "Hello, Alice."
+    :on-success (fn [_ _ response] (println "Fine! response: " (.getContent response)))
+    :on-failure (fn [_ _ response] (println "Oops!" (.getStatusCode response)))
+    :on-timeout (fn [_] (println "Timeout, try it later.")))</pre>
+<span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
 
 <br />
 <h2>Public Variables and Functions</h2>
@@ -94,16 +114,6 @@ namespace.
   <pre id="var-usage">Usage: (account)
 </pre>
   <pre id="var-docstr">Get current bound account information.</pre>
-  <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  
-  
-</div><div id="var-entry">
-  <br />
-  <hr />
-  <h2 id="cljain.dum/account-map">account-map</h2>
-  <span id="var-type">var</span><br />
-  <pre id="var-usage"></pre>
-  <pre id="var-docstr">Store current account information, contain :user :domain :display-name</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
   
   
@@ -149,7 +159,7 @@ namespace.
   <hr />
   <h2 id="cljain.dum/initialize!">initialize!</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (initialize! &amp; account-info)
+  <pre id="var-usage">Usage: (initialize! &amp; {:keys [user domain display-name]})
 </pre>
   <pre id="var-docstr">Set the default user account information with the current bound provider.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
@@ -169,9 +179,25 @@ namespace.
 </div><div id="var-entry">
   <br />
   <hr />
+  <h2 id="cljain.dum/register-to">register-to</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (register-to registry-address expires-seconds &amp; {:keys [on-success on-failure on-refreshed on-refresh-failed]})
+</pre>
+  <pre id="var-docstr">Send REGISTER sip message to target registry server, and auto refresh register before
+expired.
+
+Notice: No matter the first register whether sent successfully, the register auto refresh
+timer will be started. Application can choose to stop it use 'stop-refresh-register', or
+let it auto retry after expires secondes.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.3.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
   <h2 id="cljain.dum/send-request!">send-request!</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (send-request! message &amp; options)
+  <pre id="var-usage">Usage: (send-request! message &amp; {to-address :to, dialog :in, on-timeout :on-timeout, transport :use, on-success :on-success, content :pack, more-headers :more-headers, from-address :from, on-failure :on-failure})
 </pre>
   <pre id="var-docstr">Fluent style sip message send function.
 
@@ -198,10 +224,21 @@ to return a content map is recommended.
   <hr />
   <h2 id="cljain.dum/send-response!">send-response!</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (send-response! status-code &amp; options)
+  <pre id="var-usage">Usage: (send-response! status-code &amp; {transaction :in, content :pack, transport :use, more-headers :more-headers})
 </pre>
   <pre id="var-docstr">Send response with a server transactions.</pre>
   <span class="var-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
+  
+  
+</div><div id="var-entry">
+  <br />
+  <hr />
+  <h2 id="cljain.dum/unregister-to">unregister-to</h2>
+  <span id="var-type">function</span><br />
+  <pre id="var-usage">Usage: (unregister-to registry-address)
+</pre>
+  <pre id="var-docstr">Send REGISTER sip message with expires 0 for unregister.</pre>
+  <span class="var-added"><span id="content">Added in cljain version 0.3.0</span><br /></span>
   
   
 </div>
