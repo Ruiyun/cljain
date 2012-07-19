@@ -1,23 +1,24 @@
-(ns ^{:doc "DSL for sip
+(ns ^{:doc "The DSL for SIP.
             Here is a simplest example show how to use it:
 
               (use 'cljain.dum)
-              (require '[cljain.sip.core :as sip])
+              (require '[cljain.sip.core :as sip]
+                '[cljain.sip.address :as addr])
 
               (def-request-handler :MESSAGE [request transaction dialog]
+                (println \"Received: \" (.getContent request))
                 (send-response! 200 :in transaction :pack \"I receive your message.\"))
 
-              (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"127.0.0.1\" 5060 \"udp\"))
+              (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))
               (initialize! :user \"bob\" :domain \"home\" :display-name \"Bob\")
               (sip/start!)
 
-              (send-request! :MESSAGE :to #sip/address \"sip:alice@dreamland.com\" :pack \"Hello, Alice.\"
-                :on-success (fn [_ _ _] (println \"Message has been sent successfully.\"))
-                :on-failure (fn [_ _ response] (println \"oops!\" (.getStatusCode response)))
+              (send-request! :MESSAGE :to (addr/address \"sip:alice@localhost\") :pack \"Hello, Alice.\"
+                :on-success (fn [_ _ response] (println \"Fine! response: \" (.getContent response)))
+                :on-failure (fn [_ _ response] (println \"Oops!\" (.getStatusCode response)))
                 :on-timeout (fn [_] (println \"Timeout, try it later.\")))"
       :author "ruiyun"
-      :added "0.2.0"
-      :deprecated "0.4.0"}
+      :added "0.2.0"}
   cljain.dum
   (:use [clojure.string :only [upper-case]])
   (:require [cljain.sip.core :as core]
@@ -30,6 +31,7 @@
 
 (def ^{:doc "Store current account information, contain :user :domain :display-name"
        :added "0.2.0"
+       :private true
        :dynamic true}
   account-map (atom {}))
 
@@ -110,10 +112,7 @@
   {:added "0.2.0"}
   [& {:keys [user domain display-name]}]
   (reset! account-map {:user user, :domain domain, :display-name display-name})
-  (install-event-handler)
-  ;; add the #sip/address reader literals
-  ;; usage: #sip/address "sip:localhost:5060;transport=udp"
-  (.bindRoot #'default-data-readers (assoc default-data-readers 'sip/address #'cljain.sip.address/str->address)))
+  (install-event-handler))
 
 (defn finalize!
   "Clean user account information with the current bound provider."
@@ -121,8 +120,7 @@
   []
   {:pre [(core/provider-can-be-found?)]}
   (reset! account-map {})
-  (reset! request-handlers-map {})
-  (.bindRoot #'default-data-readers (dissoc default-data-readers 'sip/address)))
+  (reset! request-handlers-map {}))
 
 (defn legal-content?
   "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
@@ -239,6 +237,7 @@
        :added "0.3.0"
        :private true}
   register-ctx-map (atom {}))
+      :deprecated "0.4.0"
 
 (defn register-to
   "Send REGISTER sip message to target registry server, and auto refresh register before

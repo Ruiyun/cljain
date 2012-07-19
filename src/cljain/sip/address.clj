@@ -37,7 +37,7 @@
   "Create a new Address object using a URI.
   It useful to create the To header etc."
   {:added "0.1.0"}
-  ([^URI uri]
+  ([uri]
     {:post [(instance? Address %)]}
     (.createAddress factory uri))
   ([^URI uri display-name]
@@ -52,30 +52,6 @@
   [host & {:keys [user port transport display-name] :as options}]
   (let [uri (apply sip-uri host (flatten (seq options)))]
     (.createAddress factory display-name uri)))
-
-(defn- print-address
-  [^Address addr, ^java.io.Writer w]
-  (.write w "#sip/address \"")
-  (.write w (.toString addr))
-  (.write w "\""))
-
-(defmethod print-method Address
-  [^Address addr, ^java.io.Writer w]
-  (print-address addr w))
-
-(defmethod print-dup Address
-  [^Address addr, ^java.io.Writer w]
-  (print-address addr w))
-
-(defn str->address
-  "Creates an Address with the new address string value.
-
-    \"sip:alice@dreamland.com:5060\" or
-    \"sip:alice@dreamland.com:5060;transport=udp\" or
-    \"\\\"Alice Bird\\\" <sip:alice@dreamland.com:5070;transport=udp>"
-  {:added "0.4.0"}
-  [str]
-  (.createAddress factory str))
 
 (defn uri-from-address
   "DEPRECATED: Use Java method 'getURI' directly instead.
