@@ -84,7 +84,7 @@
   To set standard SipStack properties, use the property's lowcase short name as keyword.
   If want to set the nist define property, let property keys lead with 'nist'.
 
-  (sip-provider \"cool-phone\" \"192.168.1.2\" 5060 \"UDP\" :outbound-proxy \"192.168.1.128\")
+  (sip-provider! \"cool-phone\" \"192.168.1.2\" 5060 \"UDP\" :outbound-proxy \"192.168.1.128\")
 
   More SipStack properties document can be found here:
   http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html
@@ -98,7 +98,7 @@
         props (Properties.)]
     (.setProperty props "javax.sip.STACK_NAME" name)
     (doseq [prop more-props]
-      (let [prop-name (upper-case (.replace (name (first prop)) \- \_))
+      (let [prop-name (upper-case (.replace (clojure.core/name (first prop)) \- \_))
             prop-name (if (.startsWith prop-name "nist")
                         (str "gov.nist.javax.sip." prop-name)
                         (str "javax.sip." prop-name))]
@@ -119,11 +119,11 @@
   "Log the exception from event callback."
   {:added "0.2.0"
    :private true}
-  [callback event arg]
+  [callback event & arg]
   (let [callback-name (str "process" (reduce str (map capitalize (split (str callback) #"-"))))]
     `(try
        (log/trace ~callback-name "has been invoked." \newline "event:" (bean ~event))
-       (and ~callback (~callback ~arg))
+       (and ~callback (~callback ~@arg))
        (catch Exception e#
          (log/error "Exception occurs when calling the event callback" ~callback-name ":" e#)))))
 
@@ -132,7 +132,7 @@
   Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
   an exception will be thrown."
   {:added "0.2.0"}
-  [& {:keys [request response timeout io-exception transaction-terminated dialog-terminated]}]
+  [{:keys [request response timeout io-exception transaction-terminated dialog-terminated]}]
   {:pre [(or (nil? request) (fn? request))
          (or (nil? response) (fn? response))
          (or (nil? timeout) (fn? timeout))
@@ -142,20 +142,13 @@
   (.addSipListener (sip-provider)
     (reify SipListener
       (processRequest [this event]
-        (trace-call request event {:request (.getRequest event)
-                                   :server-transaction (.getServerTransaction event)
-                                   :dialog (.getDialog event)}))
+        (trace-call request event (.getRequest event) (.getServerTransaction event) (.getDialog event)))
       (processResponse [this event]
-        (trace-call response event {:response (.getResponse event)
-                                    :client-transaction (.getClientTransaction event)
-                                    :dialog (.getDialog event)}))
+        (trace-call response event (.getResponse event) (.getClientTransaction event) (.getDialog event)))
       (processIOException [this event]
-        (trace-call io-exception event {:host (.getHost event)
-                                        :port (.getPort event)
-                                        :transport (.getTransport event)}))
+        (trace-call io-exception event (.getHost event) (.getPort event) (.getTransport event)))
       (processTimeout [this event]
-        (trace-call timeout event {:transaction (trans-from-event event)
-                                   :timeout (.. event (getTimeout) (getValue))}))
+        (trace-call timeout event (trans-from-event event) (.. event (getTimeout) (getValue))))
       (processTransactionTerminated [this event]
         (trace-call transaction-terminated event (trans-from-event event)))
       (processDialogTerminated [this event]

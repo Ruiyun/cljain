@@ -26,19 +26,37 @@
 ;  :on-refreshed #(prn "register refresh has success!")
 ;  :on-refresh-failed #(prn "register refresh has failed!"))
 
+;(use 'cljain.dum)
+;(require '[cljain.sip.core :as sip]
+;  '[cljain.sip.address :as addr])
+;
+;(def-request-handler :MESSAGE [request transaction dialog]
+;  (println "Received: " (.getContent request))
+;  (send-response! 200 :in transaction :pack "I receive your message."))
+;
+;(sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "localhost" 5060 "udp"))
+;(initialize! :user "bob" :domain "home" :display-name "Bob")
+;(sip/start!)
+;
+;(send-request! :MESSAGE :to (addr/address "sip:alice@localhost") :pack "Hello, Alice."
+;  :on-success (fn [_ _ response] (println "Fine! response: " (.getContent response)))
+;  :on-failure (fn [_ _ response] (println "Oops!" (.getStatusCode response)))
+;  :on-timeout (fn [_] (println "Timeout, try it later.")))
+
 (use 'cljain.dum)
 (require '[cljain.sip.core :as sip]
   '[cljain.sip.address :as addr])
 
-(def-request-handler :MESSAGE [request transaction dialog]
+(defmethod handle-request :MESSAGE [request & [transaction]]
   (println "Received: " (.getContent request))
-  (send-response! 200 :in transaction :pack "I receive your message."))
+  (send-response! 200 :in transaction :pack "I receive the message from myself."))
 
+(global-alter-account :user "bob" :domain "localhost" :display-name "Bob")
 (sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "localhost" 5060 "udp"))
-(initialize! :user "bob" :domain "home" :display-name "Bob")
+(sip/set-listener! (dum-listener))
 (sip/start!)
 
-(send-request! :MESSAGE :to (addr/address "sip:alice@localhost") :pack "Hello, Alice."
-  :on-success (fn [_ _ response] (println "Fine! response: " (.getContent response)))
-  :on-failure (fn [_ _ response] (println "Oops!" (.getStatusCode response)))
+(send-request! :MESSAGE :to (addr/address "sip:bob@localhost") :pack "Hello, Bob."
+  :on-success (fn [& {:keys [response]}] (println "Fine! response: " (.getContent response)))
+  :on-failure (fn [& {:keys [response]}] (println "Oops!" (.getStatusCode response)))
   :on-timeout (fn [_] (println "Timeout, try it later.")))

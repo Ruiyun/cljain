@@ -1,21 +1,22 @@
-(ns ^{:doc "The DSL for SIP.
+(ns ^{:doc "The SIP DSL by Clojure.
             Here is a simplest example show how to use it:
 
               (use 'cljain.dum)
               (require '[cljain.sip.core :as sip]
                 '[cljain.sip.address :as addr])
 
-              (def-request-handler :MESSAGE [request transaction dialog]
+              (defmethod handle-request :MESSAGE [request & [transaction]]
                 (println \"Received: \" (.getContent request))
-                (send-response! 200 :in transaction :pack \"I receive your message.\"))
+                (send-response! 200 :in transaction :pack \"I receive the message from myself.\"))
 
+              (global-alter-account :user \"bob\" :domain \"localhost\" :display-name \"Bob\")
               (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))
-              (initialize! :user \"bob\" :domain \"home\" :display-name \"Bob\")
+              (sip/set-listener! (dum-listener))
               (sip/start!)
 
-              (send-request! :MESSAGE :to (addr/address \"sip:alice@localhost\") :pack \"Hello, Alice.\"
-                :on-success (fn [_ _ response] (println \"Fine! response: \" (.getContent response)))
-                :on-failure (fn [_ _ response] (println \"Oops!\" (.getStatusCode response)))
+              (send-request! :MESSAGE :to (addr/address \"sip:bob@localhost\") :pack \"Hello, Bob.\"
+                :on-success (fn [& {:keys [response]}] (println \"Fine! response: \" (.getContent response)))
+                :on-failure (fn [& {:keys [response]}] (println \"Oops!\" (.getStatusCode response)))
                 :on-timeout (fn [_] (println \"Timeout, try it later.\")))"
       :author "ruiyun"
       :added "0.2.0"}
@@ -27,100 +28,66 @@
             [cljain.sip.message :as msg]
             [cljain.sip.dialog :as dlg]
             [cljain.sip.transaction :as trans]
-            [cljain.tools.timer :as timer]))
+            [ruiyun.tools.timer.core :as timer]
+            [clojure.tools.logging :as log])
+  (:import [javax.sip Transaction SipProvider SipFactory]
+           [javax.sip.message Request Response]
+           [javax.sip.address Address]
+           [javax.sip.header HeaderAddress]
+           [gov.nist.javax.sip.clientauthutils AccountManager UserCredentials AuthenticationHelper]
+           [gov.nist.javax.sip SipStackExt]))
 
-(def ^{:doc "Store current account information, contain :user :domain :display-name"
-       :added "0.2.0"
-       :private true
+(def ^{:doc "A map contain these four fields: :user, :domain, :password and :display-name."
+       :added "0.4.0"
        :dynamic true}
-  account-map (atom {}))
+  *current-account*)
 
-(def ^{:doc "Store all the request handlers by 'def-request-handler'"
-       :added "0.2.0"
-       :private true}
-  request-handlers-map (atom {}))
+(defn global-alter-account [& {:keys [user domain password display-name] :as account}]
+  (alter-var-root #'*current-account* (fn [_] account)))
 
-(defn account
-  "Get current bound account information."
-  {:added "0.2.0"}
+(defmulti handle-request (fn [request & [transaction dialog]] (keyword (.getMethod request))))
+
+(defrecord AccountManagerImpl []
+  AccountManager
+  (getCredentials [this challenged-transaction realm]
+    (reify UserCredentials
+      (getUserName [_] (*current-account* :user))
+      (getPassword [_] (*current-account* :password))
+      (getSipDomain [_] (*current-account* :domain)))))
+
+(defn dum-listener
+  "Create a dum default event listener.
+  You can use it for 'cljain.sip.core/set-listener!' function."
+  {:added "0.4.0"}
   []
-  @account-map)
+  {:request (fn [request transaction dialog]
+              (let [transaction (or transaction (core/new-server-transaction! request))]
+                (handle-request request transaction dialog)))
+   :response (fn [response transaction dialog]
+               (when (not (nil? transaction))
+                 (let [{process-success :on-success
+                        process-failure :on-failure} (.getApplicationData transaction)
+                       status-code (.getStatusCode response)
+                       lead-number-of-status-code (quot status-code 100)]
+                   (cond ; ignore 1xx provisional response
+                     (= lead-number-of-status-code 2) ; 2xx means final success response
+                     (and process-success (process-success :transaction transaction :dialog dialog :response response))
 
-(defn add-handler!
-  "Add a sip request received event handler to dum."
-  {:added "0.2.0"}
-  [method process-fn]
-  (let [method (keyword (upper-case (name method)))]
-    (swap! request-handlers-map assoc method process-fn)))
+                     (or (= status-code Response/UNAUTHORIZED)
+                       (= status-code Response/PROXY_AUTHENTICATION_REQUIRED)) ; need authentication
+                     (let [header-factory (.createHeaderFactory core/sip-factory)
+                           sip-stack (.getSipStack (core/sip-provider))
+                           auth-helper (.getAuthenticationHelper sip-stack (AccountManagerImpl.) header-factory)
+                           client-trans-with-auth (.handleChallenge auth-helper response transaction (core/sip-provider) 5)]
+                       (.setApplicationData client-trans-with-auth (.getApplicationData transaction))
+                       (trans/send-request! client-trans-with-auth))
 
-(defmacro def-request-handler
-  "Define the handler to handle the sip request received from under layer.
-
-  (def-request-handler :MESSAGE [request transaction dialog]
-    (do-somethin)
-    ...)"
-  {:arglists '([method [request transaction dialog] body*])
-   :added "0.2.0"}
-  [method args & body]
-  `(let [f# (fn [~@args] ~@body)]
-     (add-handler! ~method f#)))
-
-(defn- request-processor
-  "Return a funcion to process request."
-  {:added "0.2.0"}
-  []
-  (fn [{:keys [request server-transaction dialog]}]
-    (let [method (keyword (upper-case (name (msg/method request))))
-          process-fn (get @request-handlers-map method)
-          server-transaction (or server-transaction (core/new-server-transaction! request))]
-      (and process-fn (process-fn request server-transaction dialog)))))
-
-(defn- response-processor
-  "Return a function to process response."
-  {:added "0.2.0"}
-  []
-  (fn [{:keys [response client-transaction dialog]}]
-    (when (not (nil? client-transaction))
-      (let [{process-success :on-success
-             process-failure :on-failure} (trans/application-data client-transaction)
-            lead-number-of-status-code (quot (msg/status-code response) 100)]
-        (cond ; ignore 1xx provisional response
-          (= lead-number-of-status-code 2) ; 2xx means final success response
-            (and process-success (process-success client-transaction dialog response))
-          (> lead-number-of-status-code 3) ; 4xx, 5xx, 6xx means error
-            (and process-failure (process-failure client-transaction dialog response)))))))
-
-(defn- timeout-processor
-  "Return a function to process transaction timeout event."
-  {:added "0.2.0"}
-  []
-  (fn [{:keys [transaction]}]
-    (let [process-timeout (:on-timeout (trans/application-data transaction))]
-      (and process-timeout (process-timeout transaction)))))
-
-(defn- install-event-handler
-  "Install a new dum listener to under layer."
-  {:added "0.2.0"}
-  []
-  (core/set-listener!
-    :request (request-processor)
-    :response (response-processor)
-    :timeout (timeout-processor)))
-
-(defn initialize!
-  "Set the default user account information with the current bound provider."
-  {:added "0.2.0"}
-  [& {:keys [user domain display-name]}]
-  (reset! account-map {:user user, :domain domain, :display-name display-name})
-  (install-event-handler))
-
-(defn finalize!
-  "Clean user account information with the current bound provider."
-  {:added "0.2.0"}
-  []
-  {:pre [(core/provider-can-be-found?)]}
-  (reset! account-map {})
-  (reset! request-handlers-map {}))
+                     (> lead-number-of-status-code 3) ; 4xx, 5xx, 6xx means error
+                     (and process-failure (process-failure :transaction transaction :dialog dialog :response response))))))
+   :timeout (fn [transaction _]
+              (prn "now calling process-timeout.")
+              (let [process-timeout (:on-timeout (.getApplicationData transaction))]
+                (and process-timeout (process-timeout :transaction transaction))))})
 
 (defn legal-content?
   "Check the content is a string or a map with :type, :sub-type, :length and :content keys."
@@ -130,7 +97,7 @@
     (and (map? content)
       (= (sort [:type :sub-type :content]) (sort (keys content))))))
 
-(defn- try-set-content!
+(defn- set-content!
   "Parse the :pack argument from 'send-request!' and 'send-response!',
   then try to set the appropriate Content-Type header and content to the message."
   {:added "0.2.0"}
@@ -140,32 +107,30 @@
           content-sub-type    (name (or (:sub-type content) "plain"))
           content-type-header (header/content-type content-type content-sub-type)
           content             (or (:content content) content)]
-      (msg/set-content! message content-type-header content))))
-
-; TODO Do not user application data in transaction or dialog for event dispatch.
+      (.setContent message content content-type-header))))
 
 (defn send-request!
   "Fluent style sip message send function.
 
   The simplest example just send a trivial MESSAGE:
-  (send-request! :MESSAGE :to (address (uri \"192.168.1.128\"))
-  (send-request! :INFO :in dialog-with-bob)
+
+    (send-request! :MESSAGE :to (sip-address \"192.168.1.128\"))
+    (send-request! :INFO :in dialog-with-bob)
 
   More complicate example:
-  (let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")
-        alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]
-    (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice
-      :use \"UDP\" :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %)))
+
+    (send-request! \"MESSAGE\" :pack \"Welcome\" :to (sip-address \"192.168.1.128\" :user \"bob\") :use \"UDP\"
+      :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %))
 
   If the pack content is not just a trivial string, provide a well named funciont
-  to return a content map is recommended.
-  {:type \"application\"
-   :sub-type \"pidf-diff+xml\"
-   :content content-object}"
+  to return a content map like this is recommended:
+
+    {:type \"application\"
+     :sub-type \"pidf-diff+xml\"
+     :content content-object}"
   {:added "0.2.0"}
   [message & {content :pack
               to-address :to
-              from-address :from
               transport :use
               dialog :in
               more-headers :more-headers
@@ -173,18 +138,17 @@
               on-failure :on-failure
               on-timeout :on-timeout}]
   {:pre [(core/provider-can-be-found?)
-         (not-empty @account-map)
+         (bound? #'*current-account*)
          (or (nil? content) (legal-content? content))
          (or (and (= (upper-case (name message)) "REGISTER") (nil? to-address))
            (addr/address? to-address))
-         (or (nil? from-address) (addr/address? from-address))
          (or (nil? transport) (#{"UDP" "udp" "TCP" "tcp"} transport))
          (or (nil? dialog) (core/dialog? dialog))
          (or (nil? more-headers) (sequential? more-headers))
          (or (nil? on-success) (fn? on-success))
          (or (nil? on-failure) (fn? on-failure))
          (or (nil? on-timeout) (fn? on-timeout))]}
-  (let [{:keys [user domain display-name]} (account)
+  (let [{:keys [user domain display-name]} *current-account*
         {:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
                                       (core/listening-point transport))
@@ -197,19 +161,19 @@
         request)
       (let [request-uri     (if (nil? to-address)
                               (throw (IllegalArgumentException. "Require the ':to' option for send an out of dialog request."))
-                              (addr/uri-from-address to-address))
-            from-address    (or from-address (addr/address (addr/sip-uri domain :user user) display-name))
+                              (.getURI to-address))
+            from-address    (addr/sip-address domain :user user :display-name display-name)
             from-header     (header/from from-address (header/gen-tag))
             to-header       (if (= method "REGISTER") ; for REGISTER, To header's uri should equal the From header's.
-                              (header/to (header/get-address from-header) nil) ; tag will be auto generated in transaction
+                              (header/to (.getAddress from-header) nil) ; tag will be auto generated in transaction
                               (header/to to-address nil))
-            contact-header  (header/contact (addr/address (addr/sip-uri ip :port port :transport transport :user user)))
+            contact-header  (header/contact (addr/sip-address ip :port port :transport transport :user user))
             call-id-header  (core/gen-call-id-header)
             via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
             request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header more-headers)
             transaction     (core/new-client-transcation! request)]
-        (trans/set-application-data! transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
-        (try-set-content! request content)
+        (.setApplicationData transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
+        (set-content! request content)
         (trans/send-request! transaction)
         request))))
 
@@ -218,7 +182,7 @@
   {:added "0.2.0"}
   [status-code & {transaction :in, content :pack, transport :use, more-headers :more-headers}]
   {:pre [(core/provider-can-be-found?)
-         (not-empty @account-map)
+         (bound? #'*current-account*)
          (core/transaction? transaction)
          (or (nil? content) (legal-content? content))
          (or (nil? transport) (#{"UDP" "udp" "TCP" "tcp"} transport))
@@ -226,18 +190,17 @@
   (let [{:keys [ip port transport]} (if (nil? transport)
                                       (core/listening-point)
                                       (core/listening-point transport))
-        user            (:user (account))
-        contact-header  (header/contact (addr/address (addr/sip-uri ip :port port :transport transport :user user)))
-        request         (trans/request transaction)
+        user            (*current-account* :user)
+        contact-header  (header/contact (addr/sip-address ip :port port :transport transport :user user))
+        request         (.getRequest transaction)
         response        (msg/response status-code request contact-header more-headers)]
-    (try-set-content! response content)
+    (set-content! response content)
     (trans/send-response! transaction response)))
 
 (def ^{:doc "Store contexts for the register auto refresh."
        :added "0.3.0"
        :private true}
   register-ctx-map (atom {}))
-      :deprecated "0.4.0"
 
 (defn register-to
   "Send REGISTER sip message to target registry server, and auto refresh register before
@@ -260,26 +223,27 @@
     (when (nil? register-ctx)
       (send-request! :REGISTER :to registry-address
         :more-headers [expires-header]
-        :on-success (fn [transaction _ _]
+        :on-success (fn [& {:keys [transaction]}]
                       (swap! register-ctx-map assoc registry-address
-                        {:timer (timer/run! (timer/timer "Register-Refresh")
-                                  (timer/task
-                                    (let [request (.clone (get-in @register-ctx-map [registry-address :request]))
-                                          request (msg/inc-sequence-number! request)
-                                          request (msg/remove-header! request "Via")
-                                          transaction (core/new-client-transcation! request)]
-                                      (trans/set-application-data! transaction
-                                        {:on-success (fn [_ _ _] (and on-refreshed (on-refreshed)))
-                                         :on-failure (fn [_ _ _] (and on-refresh-failed (on-refresh-failed)))
-                                         :on-timeout (fn [_] (and on-refresh-failed (on-refresh-failed)))})
-                                      (trans/send-request! transaction)
-                                      (swap! register-ctx-map assoc-in [registry-address :request] request)))
-                                  :delay  safer-interval-milliseconds
-                                  :period safer-interval-milliseconds)
+                        {:timer (timer/run-task! #(let [request (.clone (get-in @register-ctx-map [registry-address :request ]))
+                                                        request (msg/inc-sequence-number! request)
+                                                        request (doto request (.removeHeader "Via"))
+                                                        transaction (core/new-client-transcation! request)]
+                                                    (.setApplicationData transaction
+                                                      {:on-success (fn [& _] (and on-refreshed (on-refreshed)))
+                                                       :on-failure (fn [& _] (and on-refresh-failed (on-refresh-failed)))
+                                                       :on-timeout (fn [& _] (and on-refresh-failed (on-refresh-failed)))})
+                                                    (trans/send-request! transaction)
+                                                    (swap! register-ctx-map assoc-in [registry-address :request ] request))
+                                  :by (timer/timer "Register-Refresh")
+                                  :delay safer-interval-milliseconds
+                                  :period safer-interval-milliseconds
+                                  :on-exception #(log/warn "Register refresh exception: " %))
                          :request (trans/request transaction)})
+                      (prn "current register-ctx-map: " @register-ctx-map)
                       (and on-success (on-success)))
-        :on-failure (fn [_ _ _] (and on-failure (on-failure)))
-        :on-timeout (fn [_] (and on-failure (on-failure)))))))
+        :on-failure (fn [& _] (and on-failure (on-failure)))
+        :on-timeout (fn [& _] (and on-failure (on-failure)))))))
 
 (defn unregister-to
   "Send REGISTER sip message with expires 0 for unregister."
