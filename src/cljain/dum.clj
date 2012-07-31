@@ -40,7 +40,7 @@
             [cljain.sip.message :as msg]
             [cljain.sip.dialog :as dlg]
             [cljain.sip.transaction :as trans]
-            [ruiyun.tools.timer.core :as timer]
+            [ruiyun.tools.timer :as timer]
             [clojure.tools.logging :as log])
   (:import [javax.sip Transaction SipProvider SipFactory]
            [javax.sip.message Request Response]
