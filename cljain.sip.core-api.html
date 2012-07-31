@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li>
       </ul>
     </div>
     
@@ -250,7 +250,7 @@ that does not match an existing server transaction.</pre>
   <hr />
   <h2 id="cljain.sip.core/set-listener!">set-listener!</h2>
   <span id="var-type">function</span><br />
-  <pre id="var-usage">Usage: (set-listener! &amp; {:keys [request response timeout io-exception transaction-terminated dialog-terminated]})
+  <pre id="var-usage">Usage: (set-listener! {:keys [request response timeout io-exception transaction-terminated dialog-terminated]})
 </pre>
   <pre id="var-docstr">Set several event listening function to current bound provider.
 Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
@@ -291,7 +291,7 @@ Rember, the name must be unique to make a distinction between other provider.
 To set standard SipStack properties, use the property's lowcase short name as keyword.
 If want to set the nist define property, let property keys lead with 'nist'.
 
-(sip-provider "cool-phone" "192.168.1.2" 5060 "UDP" :outbound-proxy "192.168.1.128")
+(sip-provider! "cool-phone" "192.168.1.2" 5060 "UDP" :outbound-proxy "192.168.1.128")
 
 More SipStack properties document can be found here:
 <a href="http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html">http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html</a>

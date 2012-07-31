@@ -35,7 +35,7 @@ namespace.
     <div class="NamespaceTOC">
       <span class="toc-header">Namespaces</span>
       <ul id="left-sidebar-list">
-        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li><li><a href="cljain.tools.predicate-api.html" class="wiki_link">cljain.tools.predicate</a></li><li><a href="cljain.tools.timer-api.html" class="wiki_link">cljain.tools.timer</a></li>
+        <li><a href="cljain.dum-api.html" class="wiki_link">cljain.dum</a></li><li><a href="cljain.sip.address-api.html" class="wiki_link">cljain.sip.address</a></li><li><a href="cljain.sip.core-api.html" class="wiki_link">cljain.sip.core</a></li><li><a href="cljain.sip.dialog-api.html" class="wiki_link">cljain.sip.dialog</a></li><li><a href="cljain.sip.header-api.html" class="wiki_link">cljain.sip.header</a></li><li><a href="cljain.sip.message-api.html" class="wiki_link">cljain.sip.message</a></li><li><a href="cljain.sip.transaction-api.html" class="wiki_link">cljain.sip.transaction</a></li>
       </ul>
     </div>
     
@@ -77,14 +77,6 @@ namespace.
     <a href="#cljain.sip.transaction">cljain.sip.transaction</a>
     
     <br />
-  </div><div style="margin-left: 1em;" class="toc-section">
-    <a href="#cljain.tools.predicate">cljain.tools.predicate</a>
-    
-    <br />
-  </div><div style="margin-left: 1em;" class="toc-section">
-    <a href="#cljain.tools.timer">cljain.tools.timer</a>
-    
-    <br />
   </div>
 </div>
 </div>
@@ -98,30 +90,43 @@ namespace.
   <h2 id="cljain.dum">cljain.dum</h2>
   <span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
   <a href="cljain.dum-api.html" id="api-link">Detailed API documentation</a><br />
-  <pre id="namespace-docstr">The DSL for SIP.
+  <pre id="namespace-docstr">The SIP DSL by Clojure.
 Here is a simplest example show how to use it:
 
   (use 'cljain.dum)
   (require '[cljain.sip.core :as sip]
     '[cljain.sip.address :as addr])
 
-  (def-request-handler :MESSAGE [request transaction dialog]
+  (defmethod handle-request :MESSAGE [request &amp; [transaction]]
     (println "Received: " (.getContent request))
-    (send-response! 200 :in transaction :pack "I receive your message."))
+    (send-response! 200 :in transaction :pack "I receive the message from myself."))
 
+  (global-set-account :user "bob" :domain "localhost" :display-name "Bob" :password "thepwd")
   (sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "localhost" 5060 "udp"))
-  (initialize! :user "bob" :domain "home" :display-name "Bob")
+  (sip/set-listener! (dum-listener))
   (sip/start!)
 
-  (send-request! :MESSAGE :to (addr/address "sip:alice@localhost") :pack "Hello, Alice."
-    :on-success (fn [_ _ response] (println "Fine! response: " (.getContent response)))
-    :on-failure (fn [_ _ response] (println "Oops!" (.getStatusCode response)))
-    :on-timeout (fn [_] (println "Timeout, try it later.")))</pre>
+  (send-request! :MESSAGE :to (addr/address "sip:bob@localhost") :pack "Hello, Bob."
+    :on-success (fn [&amp; {:keys [response]}] (println "Fine! response: " (.getContent response)))
+    :on-failure (fn [&amp; {:keys [response]}] (println "Oops!" (.getStatusCode response)))
+    :on-timeout (fn [_] (println "Timeout, try it later.")))
+
+Remember, if you want send REGISTER to sip registry, please use the 'register-to' function, that will
+help you to deal the automatic rigister refresh:
+
+  (register-to (addr/address "sip:the-registry") 3600
+    :on-success #(prn "Register success.")
+    :on-failure #(prn "Register failed.")
+    :on-refreshed #(prn "Refreshed fine.")
+    :on-refresh-failed #(prn "Refresh failed."))
+
+This version cljain.dum has some limitation that if you want auto-refresh work correctly, you must use
+'global-set-account' to give a root binding with *current-account* like previous.</pre>
   <span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
   
   
   Public variables and functions:
-  <span id="var-link"><a href="cljain.dum-api.html#cljain.dum/account" id="var-tag">account</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/add-handler!" id="var-tag">add-handler!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/def-request-handler" id="var-tag">def-request-handler</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/finalize!" id="var-tag">finalize!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/initialize!" id="var-tag">initialize!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/legal-content?" id="var-tag">legal-content?</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/register-to" id="var-tag">register-to</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/send-request!" id="var-tag">send-request!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/send-response!" id="var-tag">send-response!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/unregister-to" id="var-tag">unregister-to</a> </span><br />
+  <span id="var-link"><a href="cljain.dum-api.html#cljain.dum/*current-account*" id="var-tag">*current-account*</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/dum-listener" id="var-tag">dum-listener</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/global-set-account" id="var-tag">global-set-account</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/legal-content?" id="var-tag">legal-content?</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/register-to" id="var-tag">register-to</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/send-request!" id="var-tag">send-request!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/send-response!" id="var-tag">send-response!</a> </span><span id="var-link"><a href="cljain.dum-api.html#cljain.dum/unregister-to" id="var-tag">unregister-to</a> </span><br />
   
 </div><div id="namespace-entry">
   <br />
@@ -200,32 +205,6 @@ Here is a simplest example show how to use it:
   
   Public variables and functions:
   <span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/application-data" id="var-tag">application-data</a> </span><span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/branch-id" id="var-tag">branch-id</a> </span><span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/request" id="var-tag">request</a> </span><span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/send-request!" id="var-tag">send-request!</a> </span><span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/send-response!" id="var-tag">send-response!</a> </span><span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/set-application-data!" id="var-tag">set-application-data!</a> </span><span id="var-link"><a href="cljain.sip.transaction-api.html#cljain.sip.transaction/transaction?" id="var-tag">transaction?</a> </span><br />
-  
-</div><div id="namespace-entry">
-  <br />
-  <hr />
-  <h2 id="cljain.tools.predicate">cljain.tools.predicate</h2>
-  <span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
-  <a href="cljain.tools.predicate-api.html" id="api-link">Detailed API documentation</a><br />
-  <pre id="namespace-docstr"></pre>
-  <span class="ns-added"><span id="content">Added in cljain version 0.2.0</span><br /></span>
-  <span class="ns-deprecated"><span id="content">Deprecated since cljain version 0.4.0</span><br /></span>
-  
-  Public variables and functions:
-  <span id="var-link"><a href="cljain.tools.predicate-api.html#cljain.tools.predicate/check-optional" id="var-tag">check-optional</a> </span><span id="var-link"><a href="cljain.tools.predicate-api.html#cljain.tools.predicate/check-required" id="var-tag">check-required</a> </span><span id="var-link"><a href="cljain.tools.predicate-api.html#cljain.tools.predicate/in?" id="var-tag">in?</a> </span><span id="var-link"><a href="cljain.tools.predicate-api.html#cljain.tools.predicate/legal-option?" id="var-tag">legal-option?</a> </span><br />
-  
-</div><div id="namespace-entry">
-  <br />
-  <hr />
-  <h2 id="cljain.tools.timer">cljain.tools.timer</h2>
-  <span id="author-line">by <span id="author-name">ruiyun</span><br /></span>
-  <a href="cljain.tools.timer-api.html" id="api-link">Detailed API documentation</a><br />
-  <pre id="namespace-docstr">place doc string here</pre>
-  
-  
-  
-  Public variables and functions:
-  <span id="var-link"><a href="cljain.tools.timer-api.html#cljain.tools.timer/cancel!" id="var-tag">cancel!</a> </span><span id="var-link"><a href="cljain.tools.timer-api.html#cljain.tools.timer/deamon-timer" id="var-tag">deamon-timer</a> </span><span id="var-link"><a href="cljain.tools.timer-api.html#cljain.tools.timer/task" id="var-tag">task</a> </span><span id="var-link"><a href="cljain.tools.timer-api.html#cljain.tools.timer/timer" id="var-tag">timer</a> </span><br />
   
 </div>
 </div>

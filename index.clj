@@ -4,7 +4,7 @@
    :name "cljain.dum",
    :author "ruiyun",
    :doc
-   "The DSL for SIP.\nHere is a simplest example show how to use it:\n\n  (use 'cljain.dum)\n  (require '[cljain.sip.core :as sip]\n    '[cljain.sip.address :as addr])\n\n  (def-request-handler :MESSAGE [request transaction dialog]\n    (println \"Received: \" (.getContent request))\n    (send-response! 200 :in transaction :pack \"I receive your message.\"))\n\n  (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))\n  (initialize! :user \"bob\" :domain \"home\" :display-name \"Bob\")\n  (sip/start!)\n\n  (send-request! :MESSAGE :to (addr/address \"sip:alice@localhost\") :pack \"Hello, Alice.\"\n    :on-success (fn [_ _ response] (println \"Fine! response: \" (.getContent response)))\n    :on-failure (fn [_ _ response] (println \"Oops!\" (.getStatusCode response)))\n    :on-timeout (fn [_] (println \"Timeout, try it later.\")))"}
+   "The SIP DSL by Clojure.\nHere is a simplest example show how to use it:\n\n  (use 'cljain.dum)\n  (require '[cljain.sip.core :as sip]\n    '[cljain.sip.address :as addr])\n\n  (defmethod handle-request :MESSAGE [request & [transaction]]\n    (println \"Received: \" (.getContent request))\n    (send-response! 200 :in transaction :pack \"I receive the message from myself.\"))\n\n  (global-set-account :user \"bob\" :domain \"localhost\" :display-name \"Bob\" :password \"thepwd\")\n  (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))\n  (sip/set-listener! (dum-listener))\n  (sip/start!)\n\n  (send-request! :MESSAGE :to (addr/address \"sip:bob@localhost\") :pack \"Hello, Bob.\"\n    :on-success (fn [& {:keys [response]}] (println \"Fine! response: \" (.getContent response)))\n    :on-failure (fn [& {:keys [response]}] (println \"Oops!\" (.getStatusCode response)))\n    :on-timeout (fn [_] (println \"Timeout, try it later.\")))\n\nRemember, if you want send REGISTER to sip registry, please use the 'register-to' function, that will\nhelp you to deal the automatic rigister refresh:\n\n  (register-to (addr/address \"sip:the-registry\") 3600\n    :on-success #(prn \"Register success.\")\n    :on-failure #(prn \"Register failed.\")\n    :on-refreshed #(prn \"Refreshed fine.\")\n    :on-refresh-failed #(prn \"Refresh failed.\"))\n\nThis version cljain.dum has some limitation that if you want auto-refresh work correctly, you must use\n'global-set-account' to give a root binding with *current-account* like previous."}
   {:source-url nil,
    :wiki-url "cljain.sip.address-api.html",
    :name "cljain.sip.address",
@@ -34,75 +34,44 @@
    :wiki-url "cljain.sip.transaction-api.html",
    :name "cljain.sip.transaction",
    :author "ruiyun",
-   :doc nil}
-  {:source-url nil,
-   :wiki-url "cljain.tools.predicate-api.html",
-   :name "cljain.tools.predicate",
-   :author "ruiyun",
-   :doc nil}
-  {:source-url nil,
-   :wiki-url "cljain.tools.timer-api.html",
-   :name "cljain.tools.timer",
-   :author "ruiyun",
-   :doc "place doc string here"}),
+   :doc nil}),
  :vars
- ({:arglists ([]),
-   :name "account",
+ ({:name "*current-account*",
    :namespace "cljain.dum",
    :source-url nil,
-   :added "0.2.0",
+   :dynamic true,
+   :added "0.4.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.dum-api.html#cljain.dum/account",
-   :doc "Get current bound account information.",
-   :var-type "function",
-   :line 43,
-   :file "src/cljain/dum.clj"}
-  {:arglists ([method process-fn]),
-   :name "add-handler!",
-   :namespace "cljain.dum",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url "/cljain.dum-api.html#cljain.dum/add-handler!",
-   :doc "Add a sip request received event handler to dum.",
-   :var-type "function",
-   :line 49,
-   :file "src/cljain/dum.clj"}
-  {:arglists ([method [request transaction dialog] body*]),
-   :name "def-request-handler",
-   :namespace "cljain.dum",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url "/cljain.dum-api.html#cljain.dum/def-request-handler",
+   :wiki-url "/cljain.dum-api.html#cljain.dum/*current-account*",
    :doc
-   "Define the handler to handle the sip request received from under layer.\n\n(def-request-handler :MESSAGE [request transaction dialog]\n  (do-somethin)\n  ...)",
-   :var-type "macro",
-   :line 56,
+   "A map contain these four fields: :user, :domain, :password and :display-name.",
+   :var-type "var",
+   :line 52,
    :file "src/cljain/dum.clj"}
   {:arglists ([]),
-   :name "finalize!",
+   :name "dum-listener",
    :namespace "cljain.dum",
    :source-url nil,
-   :added "0.2.0",
+   :added "0.4.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.dum-api.html#cljain.dum/finalize!",
+   :wiki-url "/cljain.dum-api.html#cljain.dum/dum-listener",
    :doc
-   "Clean user account information with the current bound provider.",
+   "Create a dum default event listener.\nYou can use it for 'cljain.sip.core/set-listener!' function.",
    :var-type "function",
-   :line 117,
+   :line 75,
    :file "src/cljain/dum.clj"}
-  {:arglists ([& {:keys [user domain display-name]}]),
-   :name "initialize!",
+  {:arglists
+   ([& {:keys [user domain password display-name], :as account}]),
+   :name "global-set-account",
    :namespace "cljain.dum",
    :source-url nil,
-   :added "0.2.0",
+   :added "0.4.0",
    :raw-source-url nil,
-   :wiki-url "/cljain.dum-api.html#cljain.dum/initialize!",
+   :wiki-url "/cljain.dum-api.html#cljain.dum/global-set-account",
    :doc
-   "Set the default user account information with the current bound provider.",
+   "Give the *current-account* a root binding.\nAlthough you can use the clojure dynamic binding form, but use this function in this version\ncljian.dum is more recommended.",
    :var-type "function",
-   :line 110,
+   :line 57,
    :file "src/cljain/dum.clj"}
   {:arglists ([content]),
    :name "legal-content?",
@@ -114,7 +83,7 @@
    :doc
    "Check the content is a string or a map with :type, :sub-type, :length and :content keys.",
    :var-type "function",
-   :line 125,
+   :line 109,
    :file "src/cljain/dum.clj"}
   {:arglists
    ([registry-address
@@ -128,22 +97,21 @@
    :raw-source-url nil,
    :wiki-url "/cljain.dum-api.html#cljain.dum/register-to",
    :doc
-   "Send REGISTER sip message to target registry server, and auto refresh register before\nexpired.\n\nNotice: No matter the first register whether sent successfully, the register auto refresh\ntimer will be started. Application can choose to stop it use 'stop-refresh-register', or\nlet it auto retry after expires secondes.",
+   "Send REGISTER sip message to target registry server, and auto refresh register before\nexpired.\n\nNotice: please call 'global-set-account' before you call 'register-to'. in this version,\nuse dynamic binding form to bind *current-account* can not work for auto-refresh.",
    :var-type "function",
-   :line 242,
+   :line 222,
    :file "src/cljain/dum.clj"}
   {:arglists
    ([message
      &
-     {to-address :to,
-      dialog :in,
-      on-timeout :on-timeout,
+     {content :pack,
+      to-address :to,
       transport :use,
-      on-success :on-success,
-      content :pack,
+      dialog :in,
       more-headers :more-headers,
-      from-address :from,
-      on-failure :on-failure}]),
+      on-success :on-success,
+      on-failure :on-failure,
+      on-timeout :on-timeout}]),
    :name "send-request!",
    :namespace "cljain.dum",
    :source-url nil,
@@ -151,9 +119,9 @@
    :raw-source-url nil,
    :wiki-url "/cljain.dum-api.html#cljain.dum/send-request!",
    :doc
-   "Fluent style sip message send function.\n\nThe simplest example just send a trivial MESSAGE:\n(send-request! :MESSAGE :to (address (uri \"192.168.1.128\"))\n(send-request! :INFO :in dialog-with-bob)\n\nMore complicate example:\n(let [bob (address (uri \"dream.com\" :user \"bob\") \"Bob\")\n      alice (address (uri \"dream.com\" :user \"alice\") \"Alice\")]\n  (send-request! \"MESSAGE\" :pack \"Welcome\" :to bob :from alice\n    :use \"UDP\" :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %)))\n\nIf the pack content is not just a trivial string, provide a well named funciont\nto return a content map is recommended.\n{:type \"application\"\n :sub-type \"pidf-diff+xml\"\n :content content-object}",
+   "Fluent style sip message send function.\n\nThe simplest example just send a trivial MESSAGE:\n\n  (send-request! :MESSAGE :to (sip-address \"192.168.1.128\"))\n  (send-request! :INFO :in dialog-with-bob)\n\nMore complicate example:\n\n  (send-request! \"MESSAGE\" :pack \"Welcome\" :to (sip-address \"192.168.1.128\" :user \"bob\") :use \"UDP\"\n    :on-success #(prn %1 %2 %3) :on-failure #(prn %1 %2 %3) :on-timeout #(prn %))\n\nIf the pack content is not just a trivial string, provide a well named funciont\nto return a content map like this is recommended:\n\n  {:type \"application\"\n   :sub-type \"pidf-diff+xml\"\n   :content content-object}",
    :var-type "function",
-   :line 147,
+   :line 129,
    :file "src/cljain/dum.clj"}
   {:arglists
    ([status-code
@@ -170,7 +138,7 @@
    :wiki-url "/cljain.dum-api.html#cljain.dum/send-response!",
    :doc "Send response with a server transactions.",
    :var-type "function",
-   :line 216,
+   :line 197,
    :file "src/cljain/dum.clj"}
   {:arglists ([registry-address]),
    :name "unregister-to",
@@ -179,9 +147,10 @@
    :added "0.3.0",
    :raw-source-url nil,
    :wiki-url "/cljain.dum-api.html#cljain.dum/unregister-to",
-   :doc "Send REGISTER sip message with expires 0 for unregister.",
+   :doc
+   "Send REGISTER sip message with expires 0 for unregister.\nAnd the auto-refresh timer will be canceled.",
    :var-type "function",
-   :line 284,
+   :line 264,
    :file "src/cljain/dum.clj"}
   {:arglists ([uri] [uri display-name]),
    :name "address",
@@ -305,7 +274,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/dialog?",
    :doc "Check the obj is an instance of javax.sip.Dialog",
    :var-type "function",
-   :line 217,
+   :line 210,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "gen-call-id-header",
@@ -317,7 +286,7 @@
    "/cljain.sip.core-api.html#cljain.sip.core/gen-call-id-header",
    :doc "Generate a new Call-ID header use current bound provider.",
    :var-type "function",
-   :line 178,
+   :line 171,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([provider]),
    :name "global-bind-sip-provider!",
@@ -367,7 +336,7 @@
    :doc
    "Before an application can send a new request it must first request\na new client transaction to handle that Request.",
    :var-type "function",
-   :line 197,
+   :line 190,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([transaction]),
    :name "new-dialog!",
@@ -378,7 +347,7 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/new-dialog!",
    :doc "Create a dialog for the given transaction.",
    :var-type "function",
-   :line 211,
+   :line 204,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([request]),
    :name "new-server-transaction!",
@@ -391,7 +360,7 @@
    :doc
    "An application has the responsibility of deciding to respond to a Request\nthat does not match an existing server transaction.",
    :var-type "function",
-   :line 190,
+   :line 183,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "provider-can-be-found?",
@@ -415,11 +384,10 @@
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/send-request!",
    :doc "Send out of dialog SipRequest use current bound provider.",
    :var-type "function",
-   :line 184,
+   :line 177,
    :file "src/cljain/sip/core.clj"}
   {:arglists
-   ([&
-     {:keys
+   ([{:keys
       [request
        response
        timeout
@@ -466,7 +434,7 @@
    :raw-source-url nil,
    :wiki-url "/cljain.sip.core-api.html#cljain.sip.core/sip-provider!",
    :doc
-   "Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.\nRember, the name must be unique to make a distinction between other provider.\nTo set standard SipStack properties, use the property's lowcase short name as keyword.\nIf want to set the nist define property, let property keys lead with 'nist'.\n\n(sip-provider \"cool-phone\" \"192.168.1.2\" 5060 \"UDP\" :outbound-proxy \"192.168.1.128\")\n\nMore SipStack properties document can be found here:\nhttp://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html\nand\nhttp://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html",
+   "Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.\nRember, the name must be unique to make a distinction between other provider.\nTo set standard SipStack properties, use the property's lowcase short name as keyword.\nIf want to set the nist define property, let property keys lead with 'nist'.\n\n(sip-provider! \"cool-phone\" \"192.168.1.2\" 5060 \"UDP\" :outbound-proxy \"192.168.1.128\")\n\nMore SipStack properties document can be found here:\nhttp://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html\nand\nhttp://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html",
    :var-type "function",
    :line 81,
    :file "src/cljain/sip/core.clj"}
@@ -502,7 +470,7 @@
    :doc
    "Start to run the stack which bound with current bound provider.",
    :var-type "function",
-   :line 164,
+   :line 157,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([]),
    :name "stop-and-release!",
@@ -515,7 +483,7 @@
    :doc
    "Stop the stack wich bound with current bound provider. And release all resource associated the stack.\nBecareful, after called 'stop!' function, all other function include 'start!' will be invalid.\nA new provider need be generated for later call.",
    :var-type "function",
-   :line 170,
+   :line 163,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([object]),
    :name "transaction?",
@@ -527,7 +495,7 @@
    :doc
    "Check the obj is an instance of javax.sip.Transaction.\nBoth ClientTransaction and ServerTransaction are pass.",
    :var-type "function",
-   :line 204,
+   :line 197,
    :file "src/cljain/sip/core.clj"}
   {:arglists ([dialog seq-num]),
    :name "ack",
@@ -1617,98 +1585,4 @@
    "DEPRECATED: Use 'cljain.core/transaction?' instead.\nCheck the obj is an instance of javax.sip.Transaction.\nBoth ClientTransaction and ServerTransaction are pass.",
    :var-type "function",
    :line 99,
-   :file "src/cljain/sip/transaction.clj"}
-  {:arglists ([options option-key :by? option-modifier? f & args]),
-   :name "check-optional",
-   :namespace "cljain.tools.predicate",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url
-   "/cljain.tools.predicate-api.html#cljain.tools.predicate/check-optional",
-   :doc "place doc string here",
-   :var-type "macro",
-   :line 42,
-   :file "src/cljain/tools/predicate.clj"}
-  {:arglists ([options option-key :by? option-modifier? f & args]),
-   :name "check-required",
-   :namespace "cljain.tools.predicate",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url
-   "/cljain.tools.predicate-api.html#cljain.tools.predicate/check-required",
-   :doc "place doc string here",
-   :var-type "macro",
-   :line 35,
-   :file "src/cljain/tools/predicate.clj"}
-  {:arglists ([v coll]),
-   :name "in?",
-   :namespace "cljain.tools.predicate",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url
-   "/cljain.tools.predicate-api.html#cljain.tools.predicate/in?",
-   :doc "Chekc whether v is in the coll or not.",
-   :var-type "function",
-   :line 6,
-   :file "src/cljain/tools/predicate.clj"}
-  {:arglists ([required? & decl]),
-   :name "legal-option?",
-   :namespace "cljain.tools.predicate",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url
-   "/cljain.tools.predicate-api.html#cljain.tools.predicate/legal-option?",
-   :doc "place doc string here",
-   :var-type "macro",
-   :line 12,
-   :file "src/cljain/tools/predicate.clj"}
-  {:arglists ([timer]),
-   :name "cancel!",
-   :namespace "cljain.tools.timer",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url "/cljain.tools.timer-api.html#cljain.tools.timer/cancel!",
-   :doc
-   "Terminates a timer, discarding any currently scheduled tasks.",
-   :var-type "function",
-   :line 68,
-   :file "src/cljain/tools/timer.clj"}
-  {:arglists ([]),
-   :name "deamon-timer",
-   :namespace "cljain.tools.timer",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url
-   "/cljain.tools.timer-api.html#cljain.tools.timer/deamon-timer",
-   :doc "Create a new java.util.Timer object with deamon option.",
-   :var-type "function",
-   :line 13,
-   :file "src/cljain/tools/timer.clj"}
-  {:arglists ([body*]),
-   :name "task",
-   :namespace "cljain.tools.timer",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url "/cljain.tools.timer-api.html#cljain.tools.timer/task",
-   :doc "Create a java.util.TimerTask object with some code.",
-   :var-type "macro",
-   :line 19,
-   :file "src/cljain/tools/timer.clj"}
-  {:arglists ([] [name]),
-   :name "timer",
-   :namespace "cljain.tools.timer",
-   :source-url nil,
-   :added "0.2.0",
-   :raw-source-url nil,
-   :wiki-url "/cljain.tools.timer-api.html#cljain.tools.timer/timer",
-   :doc "Create a new java.util.Timer object.",
-   :var-type "function",
-   :line 7,
-   :file "src/cljain/tools/timer.clj"})}
+   :file "src/cljain/sip/transaction.clj"})}
