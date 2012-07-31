@@ -9,7 +9,7 @@
                 (println \"Received: \" (.getContent request))
                 (send-response! 200 :in transaction :pack \"I receive the message from myself.\"))
 
-              (global-alter-account :user \"bob\" :domain \"localhost\" :display-name \"Bob\")
+              (global-set-account :user \"bob\" :domain \"localhost\" :display-name \"Bob\" :password \"thepwd\")
               (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))
               (sip/set-listener! (dum-listener))
               (sip/start!)
@@ -17,7 +17,19 @@
               (send-request! :MESSAGE :to (addr/address \"sip:bob@localhost\") :pack \"Hello, Bob.\"
                 :on-success (fn [& {:keys [response]}] (println \"Fine! response: \" (.getContent response)))
                 :on-failure (fn [& {:keys [response]}] (println \"Oops!\" (.getStatusCode response)))
-                :on-timeout (fn [_] (println \"Timeout, try it later.\")))"
+                :on-timeout (fn [_] (println \"Timeout, try it later.\")))
+
+            Remember, if you want send REGISTER to sip registry, please use the 'register-to' function, that will
+            help you to deal the automatic rigister refresh:
+
+              (register-to (addr/address \"sip:the-registry\") 3600
+                :on-success #(prn \"Register success.\")
+                :on-failure #(prn \"Register failed.\")
+                :on-refreshed #(prn \"Refreshed fine.\")
+                :on-refresh-failed #(prn \"Refresh failed.\"))
+
+            This version cljain.dum has some limitation that if you want auto-refresh work correctly, you must use
+            'global-set-account' to give a root binding with *current-account* like previous."
       :author "ruiyun"
       :added "0.2.0"}
   cljain.dum
@@ -42,7 +54,12 @@
        :dynamic true}
   *current-account*)
 
-(defn global-alter-account [& {:keys [user domain password display-name] :as account}]
+(defn global-set-account
+  "Give the *current-account* a root binding.
+  Although you can use the clojure dynamic binding form, but use this function in this version
+  cljian.dum is more recommended."
+  {:added "0.4.0"}
+  [& {:keys [user domain password display-name] :as account}]
   (alter-var-root #'*current-account* (fn [_] account)))
 
 (defmulti handle-request (fn [request & [transaction dialog]] (keyword (.getMethod request))))
@@ -206,9 +223,8 @@
   "Send REGISTER sip message to target registry server, and auto refresh register before
   expired.
 
-  Notice: No matter the first register whether sent successfully, the register auto refresh
-  timer will be started. Application can choose to stop it use 'stop-refresh-register', or
-  let it auto retry after expires secondes."
+  Notice: please call 'global-set-account' before you call 'register-to'. in this version,
+  use dynamic binding form to bind *current-account* can not work for auto-refresh."
   {:added "0.3.0"}
   [registry-address expires-seconds & {:keys [on-success on-failure on-refreshed on-refresh-failed]}]
   {:pre [(addr/address? registry-address)
@@ -246,7 +262,8 @@
         :on-timeout (fn [& _] (and on-failure (on-failure)))))))
 
 (defn unregister-to
-  "Send REGISTER sip message with expires 0 for unregister."
+  "Send REGISTER sip message with expires 0 for unregister.
+  And the auto-refresh timer will be canceled."
   {:added "0.3.0"}
   [registry-address]
   (let [refresh-timer (get-in @register-ctx-map [registry-address :timer])]
