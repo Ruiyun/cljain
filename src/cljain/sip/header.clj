@@ -5,7 +5,7 @@
   (:use     clojure.string
             [cljain.sip.core :only [sip-factory]])
   (:import  [javax.sip SipFactory]
-            [javax.sip.header HeaderFactory HeaderAddress Header CSeqHeader]
+            [javax.sip.header HeaderFactory HeaderAddress Header CSeqHeader WWWAuthenticateHeader]
             [javax.sip.address Address URI]
             [gov.nist.javax.sip Utils]))
 
@@ -117,8 +117,15 @@
 (defn www-authenticate
   "Creates a new WWWAuthenticateHeader based on the newly supplied scheme value."
   {:added "0.2.0"}
-  [^String scheme]
-  (.createWWWAuthenticateHeader factory scheme))
+  [^String scheme, ^String realm, ^String nonce & {:keys [algorithm qop opaque domain stale]}]
+  (doto (.createWWWAuthenticateHeader factory scheme)
+    (.setRealm realm)
+    (.setNonce nonce)
+    (#(when (not (nil? algorithm)) (.setAlgorithm % algorithm)))
+    (#(when (not (nil? qop)) (.setQop % qop)))
+    (#(when (not (nil? opaque)) (.setOpaque % opaque)))
+    (#(when (not (nil? domain)) (.setDomain % domain)))
+    (#(when (not (nil? stale)) (.setStale % stale)))))
 
 (defn extension
   "Creates a new Header based on the newly supplied name and value values."

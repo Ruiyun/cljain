@@ -1,6 +1,6 @@
 (ns ^{:author "ruiyun"}
   cljain.test.register
-  (:import [javax.sip.header WWWAuthenticateHeader]
+  (:import [javax.sip.header WWWAuthenticateHeader AuthorizationHeader]
            [javax.sip.message Response]))
 
 (org.apache.log4j.PropertyConfigurator/configure "log4j.properties")
@@ -11,10 +11,11 @@
   '[cljain.sip.header :as header])
 
 (defmethod handle-request :REGISTER [request transaction & _]
-  (if (.getHeader request WWWAuthenticateHeader/NAME)
+  (if (.getHeader request AuthorizationHeader/NAME)
     (send-response! Response/OK :in transaction)
     (send-response! Response/UNAUTHORIZED :in transaction
-      :more-headers [(header/authorization "Digest algorithm=MD5, realm=\"localhost\", nonce=\"34dd9dfd\"")])))
+      :more-headers [(header/www-authenticate "Digest" "localhost" "aa2f052b75d9ed32"
+                       :algorithm "MD5" :stale false)])))
 
 (global-set-account :user "bob" :domain "localhost" :display-name "Bob" :password "123456")
 ;(sip/global-bind-sip-provider! (sip/sip-provider! "my-app" "localhost" 6060 "udp" :outbound-proxy "127.0.0.1:5060"))

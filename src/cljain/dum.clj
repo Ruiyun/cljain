@@ -5,7 +5,7 @@
               (require '[cljain.sip.core :as sip]
                 '[cljain.sip.address :as addr])
 
-              (defmethod handle-request :MESSAGE [request & [transaction]]
+              (defmethod handle-request :MESSAGE [request transcation _]
                 (println \"Received: \" (.getContent request))
                 (send-response! 200 :in transaction :pack \"I receive the message from myself.\"))
 
@@ -102,7 +102,6 @@
                      (> lead-number-of-status-code 3) ; 4xx, 5xx, 6xx means error
                      (and process-failure (process-failure :transaction transaction :dialog dialog :response response))))))
    :timeout (fn [transaction _]
-              (prn "now calling process-timeout.")
               (let [process-timeout (:on-timeout (.getApplicationData transaction))]
                 (and process-timeout (process-timeout :transaction transaction))))})
 
@@ -256,7 +255,6 @@
                                   :period safer-interval-milliseconds
                                   :on-exception #(log/warn "Register refresh exception: " %))
                          :request (trans/request transaction)})
-                      (prn "current register-ctx-map: " @register-ctx-map)
                       (and on-success (on-success)))
         :on-failure (fn [& _] (and on-failure (on-failure)))
         :on-timeout (fn [& _] (and on-failure (on-failure)))))))
