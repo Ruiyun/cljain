@@ -23,7 +23,7 @@
 (sip/set-listener! (dum-listener))
 (sip/start!)
 
-(register-to (addr/address "sip:localhost") 40
+(register-to! (addr/address "sip:localhost") 40
   :on-success #(prn "success")
   :on-failure #(prn "failure")
   :on-refreshed #(prn "refreshed")

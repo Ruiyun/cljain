@@ -19,10 +19,10 @@
                 :on-failure (fn [& {:keys [response]}] (println \"Oops!\" (.getStatusCode response)))
                 :on-timeout (fn [_] (println \"Timeout, try it later.\")))
 
-            Remember, if you want send REGISTER to sip registry, please use the 'register-to' function, that will
+            Remember, if you want send REGISTER to sip registry, please use the 'register-to!' function, that will
             help you to deal the automatic rigister refresh:
 
-              (register-to (addr/address \"sip:the-registry\") 3600
+              (register-to! (addr/address \"sip:the-registry\") 3600
                 :on-success #(prn \"Register success.\")
                 :on-failure #(prn \"Register failed.\")
                 :on-refreshed #(prn \"Refreshed fine.\")
@@ -218,11 +218,16 @@
        :private true}
   register-ctx-map (atom {}))
 
-(defn register-to
+(defn- reg-req-for-refresh [registry-address]
+  (doto (.clone (get-in @register-ctx-map [registry-address :request ]))
+    (msg/inc-sequence-number!)
+    (.removeHeader "Via")))
+
+(defn register-to!
   "Send REGISTER sip message to target registry server, and auto refresh register before
   expired.
 
-  Notice: please call 'global-set-account' before you call 'register-to'. in this version,
+  Notice: please call 'global-set-account' before you call 'register-to!'. in this version,
   use dynamic binding form to bind *current-account* can not work for auto-refresh."
   {:added "0.3.0"}
   [registry-address expires-seconds & {:keys [on-success on-failure on-refreshed on-refresh-failed]}]
@@ -240,16 +245,15 @@
         :more-headers [expires-header]
         :on-success (fn [& {:keys [transaction]}]
                       (swap! register-ctx-map assoc registry-address
-                        {:timer (timer/run-task! #(let [request (.clone (get-in @register-ctx-map [registry-address :request ]))
-                                                        request (msg/inc-sequence-number! request)
-                                                        request (doto request (.removeHeader "Via"))
-                                                        transaction (core/new-client-transcation! request)]
-                                                    (.setApplicationData transaction
-                                                      {:on-success (fn [& _] (and on-refreshed (on-refreshed)))
-                                                       :on-failure (fn [& _] (and on-refresh-failed (on-refresh-failed)))
-                                                       :on-timeout (fn [& _] (and on-refresh-failed (on-refresh-failed)))})
-                                                    (trans/send-request! transaction)
-                                                    (swap! register-ctx-map assoc-in [registry-address :request ] request))
+                        {:timer (timer/run-task!
+                                  #(let [request (reg-req-for-refresh registry-address)
+                                         transaction (core/new-client-transcation! request)]
+                                     (.setApplicationData transaction
+                                       {:on-success (fn [& _] (and on-refreshed (on-refreshed)))
+                                        :on-failure (fn [& _] (and on-refresh-failed (on-refresh-failed)))
+                                        :on-timeout (fn [& _] (and on-refresh-failed (on-refresh-failed)))})
+                                     (trans/send-request! transaction)
+                                     (swap! register-ctx-map assoc-in [registry-address :request ] request))
                                   :by (timer/timer "Register-Refresh")
                                   :delay safer-interval-milliseconds
                                   :period safer-interval-milliseconds
@@ -259,11 +263,14 @@
         :on-failure (fn [& _] (and on-failure (on-failure)))
         :on-timeout (fn [& _] (and on-failure (on-failure)))))))
 
-(defn unregister-to
+(defn unregister-to!
   "Send REGISTER sip message with expires 0 for unregister.
   And the auto-refresh timer will be canceled."
   {:added "0.3.0"}
   [registry-address]
   (let [refresh-timer (get-in @register-ctx-map [registry-address :timer])]
     (and refresh-timer (timer/cancel! refresh-timer))
+    (let [request (reg-req-for-refresh registry-address)]
+      (.setHeader request (header/expires 0))
+      (trans/send-request! (core/new-client-transcation! request)))
     (swap! register-ctx-map dissoc registry-address)))
