@@ -12,3 +12,7 @@
 *.iml
 /autodoc
 autodoc/**
+/doc
+doc/**
+/target
+target/**
