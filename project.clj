@@ -1,5 +1,5 @@
 (defproject cljain "0.5.0-SNAPSHOT"
-  :description "Enjoy JAIN-SIP with Clojure taste."
+  :description "Enjoy JAIN-SIP in Clojure's way."
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/tools.logging "0.2.3"]
                  [ruiyun/tools.timer "1.0.0"]
