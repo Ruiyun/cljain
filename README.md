@@ -2,7 +2,7 @@ cljain
 =========
 
 The cljain is an abstraction layer sitting on top of [JAIN-SIP].
-It let's you use it as [Clojure] way.
+It let's you use it in [Clojure]'s way.
 
 Installation
 ============
