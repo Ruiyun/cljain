@@ -243,7 +243,7 @@
     (when (nil? register-ctx)
       (send-request! :REGISTER :to registry-address
         :more-headers [expires-header]
-        :on-success (fn [& {:keys [transaction]}]
+        :on-success (fn [& {:keys [transaction response]}]
                       (swap! register-ctx-map assoc registry-address
                         {:timer (timer/run-task!
                                   #(let [request (reg-req-for-refresh registry-address)
@@ -259,7 +259,7 @@
                                   :period safer-interval-milliseconds
                                   :on-exception #(log/warn "Register refresh exception: " %))
                          :request (trans/request transaction)})
-                      (and on-success (on-success)))
+                      (and on-success (on-success response)))
         :on-failure (fn [& _] (and on-failure (on-failure)))
         :on-timeout (fn [& _] (and on-failure (on-failure)))))))
 
