@@ -123,7 +123,8 @@
           content-sub-type    (name (or (:sub-type content) "plain"))
           content-type-header (header/content-type content-type content-sub-type)
           content             (or (:content content) content)]
-      (.setContent message content content-type-header))))
+      (.setContent message content content-type-header)))
+  message)
 
 (defn send-request!
   "Fluent style sip message send function.
@@ -157,7 +158,8 @@
          (bound? #'*current-account*)
          (or (nil? content) (legal-content? content))
          (or (and (= (upper-case (name message)) "REGISTER") (nil? to-address))
-           (addr/address? to-address))
+             (addr/address? to-address)
+             dialog)
          (or (nil? transport) (#{"UDP" "udp" "TCP" "tcp"} transport))
          (or (nil? dialog) (core/dialog? dialog))
          (or (nil? more-headers) (sequential? more-headers))
@@ -171,8 +173,9 @@
         domain  (or domain ip)
         method  (upper-case (name message))]
     (if (not (nil? dialog))
-      (let [request (dlg/create-request dialog method)
-            transaction (core/new-client-transcation! request)]
+      (let [request (-> (dlg/create-request dialog method) (set-content! content))
+            ^Transaction transaction (core/new-client-transcation! request)]
+        (.setApplicationData transaction {:on-success on-success, :on-failure on-failure, :on-timeout on-timeout})
         (dlg/send-request! dialog transaction)
         request)
       (let [request-uri     (if (nil? to-address)
@@ -187,7 +190,7 @@
             call-id-header  (core/gen-call-id-header)
             via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
             request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header more-headers)
-            transaction     (core/new-client-transcation! request)]
+            ^Transaction transaction     (core/new-client-transcation! request)]
         (.setApplicationData transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
         (set-content! request content)
         (trans/send-request! transaction)
