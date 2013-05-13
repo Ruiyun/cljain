@@ -42,11 +42,9 @@
               [cljain.sip.header :as header]
               [cljain.sip.address :as addr]
               [cljain.sip.message :as msg]
-              [cljain.sip.dialog :as dlg]
-              [cljain.sip.transaction :as trans]
               [ruiyun.tools.timer :as timer]
               [clojure.tools.logging :as log])
-    (:import [javax.sip Transaction SipProvider SipFactory Dialog]
+    (:import [javax.sip Transaction ClientTransaction ServerTransaction SipProvider SipStack SipFactory Dialog]
              [javax.sip.message Request Response]
              [javax.sip.address Address]
              [javax.sip.header HeaderAddress]
@@ -100,12 +98,12 @@
 
                      (or (= status-code Response/UNAUTHORIZED)
                        (= status-code Response/PROXY_AUTHENTICATION_REQUIRED)) ; need authentication
-                     (let [header-factory (.createHeaderFactory core/sip-factory)
-                           sip-stack (.getSipStack (core/sip-provider))
-                           auth-helper (.getAuthenticationHelper sip-stack (AccountManagerImpl.) header-factory)
-                           client-trans-with-auth (.handleChallenge auth-helper response transaction (core/sip-provider) 5)]
+                     (let [^HeaderFactory header-factory (.createHeaderFactory core/sip-factory)
+                           ^SipStack sip-stack (.getSipStack (core/sip-provider))
+                           ^AuthenticationHelper auth-helper (.getAuthenticationHelper sip-stack (AccountManagerImpl.) header-factory)
+                           ^ClientTransaction client-trans-with-auth (.handleChallenge auth-helper response transaction (core/sip-provider) 5)]
                        (.setApplicationData client-trans-with-auth (.getApplicationData transaction))
-                       (trans/send-request! client-trans-with-auth))
+                       (.sendRequest client-trans-with-auth))
 
                      (> lead-number-of-status-code 3) ; 4xx, 5xx, 6xx means error
                      (and process-failure (process-failure :transaction transaction :dialog dialog :response response))))))
@@ -152,9 +150,9 @@
      :sub-type \"pidf-diff+xml\"
      :content content-object}"
   [message & {content :pack
-              to-address :to
+              ^HeaderAddress to-address :to
               transport :use
-              dialog :in
+              ^Dialog dialog :in
               more-headers :more-headers
               on-success :on-success
               on-failure :on-failure
@@ -178,10 +176,10 @@
         domain  (or domain ip)
         method  (upper-case (name message))]
     (if (not (nil? dialog))
-      (let [request (-> (dlg/create-request dialog method) (set-content! content))
+      (let [request (-> (.createRequest dialog method) (set-content! content))
             ^Transaction transaction (core/new-client-transcation! request)]
         (.setApplicationData transaction {:on-success on-success, :on-failure on-failure, :on-timeout on-timeout})
-        (dlg/send-request! dialog transaction)
+        (.sendRequest dialog transaction)
         request)
       (let [request-uri     (if (nil? to-address)
                               (throw (IllegalArgumentException. "Require the ':to' option for send an out of dialog request."))
@@ -198,12 +196,12 @@
             ^Transaction transaction     (core/new-client-transcation! request)]
         (.setApplicationData transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
         (set-content! request content)
-        (trans/send-request! transaction)
+        (.sendRequest transaction)
         request))))
 
 (defn send-response!
   "Send response with a server transactions."
-  [status-code & {^Transaction transaction :in, content :pack, transport :use, more-headers :more-headers}]
+  [status-code & {^ServerTransaction transaction :in, content :pack, transport :use, more-headers :more-headers}]
   {:pre [(core/provider-can-be-found?)
          (bound? #'*current-account*)
          (core/transaction? transaction)
@@ -218,13 +216,13 @@
         request         (.getRequest transaction)
         response        (msg/response status-code request contact-header more-headers)]
     (set-content! response content)
-    (trans/send-response! transaction response)))
+    (.sendResponse transaction response)))
 
 (def ^{:doc "Store contexts for the register auto refresh."
        :private true}
   register-ctx-map (atom {}))
 
-(defn- reg-req-for-refresh [registry-address]
+(defn- ^Request reg-req-for-refresh [registry-address]
   (when-let [^Request req (get-in @register-ctx-map [registry-address :request])]
     (doto ^Request (.clone req)
       (msg/inc-sequence-number!)
@@ -249,7 +247,7 @@
     (when (nil? register-ctx)
       (send-request! :REGISTER :to registry-address
         :more-headers [expires-header]
-        :on-success (fn [& {:keys [transaction response]}]
+        :on-success (fn [& {:keys [^ServerTransaction transaction, response]}]
                       (swap! register-ctx-map assoc registry-address
                         {:timer (timer/run-task!
                                   #(let [request (reg-req-for-refresh registry-address)
@@ -258,13 +256,13 @@
                                        {:on-success (fn [& {response :response}] (and on-refreshed (on-refreshed response)))
                                         :on-failure (fn [& {response :response}] (and on-refresh-failed (on-refresh-failed response)))
                                         :on-timeout (fn [& _] (and on-refresh-failed (on-refresh-failed nil)))})
-                                     (trans/send-request! transaction)
+                                     (.sendRequest transaction)
                                      (swap! register-ctx-map assoc-in [registry-address :request ] request))
                                   :by (timer/timer "Register-Refresh")
                                   :delay safer-interval-milliseconds
                                   :period safer-interval-milliseconds
                                   :on-exception #(log/warn "Register refresh exception: " %))
-                         :request (trans/request transaction)})
+                         :request (.getRequest transaction)})
                       (and on-success (on-success response)))
         :on-failure (fn [& {response :response}] (and on-failure (on-failure response)))
         :on-timeout (fn [& _] (and on-failure (on-failure nil)))))))
@@ -277,5 +275,5 @@
     (and refresh-timer (timer/cancel! refresh-timer))
     (let [request (reg-req-for-refresh registry-address)]
       (.setHeader request (header/expires 0))
-      (trans/send-request! (core/new-client-transcation! request)))
+      (.sendRequest (core/new-client-transcation! request)))
     (swap! register-ctx-map dissoc registry-address)))

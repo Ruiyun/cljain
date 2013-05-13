@@ -1,84 +1,73 @@
-(ns ^{:author "ruiyun"
-      :added "0.2.0"}
-  cljain.sip.core
+(ns cljain.sip.core
   (:use [clojure.string :only [upper-case lower-case capitalize split]])
   (:require [clojure.tools.logging :as log])
   (:import [java.util Properties]
-           [javax.sip SipFactory SipStack SipProvider SipListener Transaction ClientTransaction Dialog
+           [javax.sip SipFactory SipStack SipProvider SipListener ListeningPoint Transaction ClientTransaction ServerTransaction Dialog
             ResponseEvent IOExceptionEvent TimeoutEvent Timeout TransactionTerminatedEvent DialogTerminatedEvent]))
 
 (def ^{:doc "The instance of JAIN-SIP SipFactory."
-       :added "0.2.0"}
+       :tag SipFactory}
   sip-factory (doto (SipFactory/getInstance) (.setPathName "gov.nist")))
 
 (def ^{:doc "Before call any function expect 'sip-provider!' in the cljain.sip.core namespace,
             please binding *sip-provider* with the current provider object first."
-       :added "0.2.0"
+       :tag SipProvider
        :dynamic true}
   *sip-provider*)
 
 (def ^{:doc "Set by 'global-start!'"
-       :added "0.2.0"
+       :tag SipProvider
        :private true}
   global-sip-provider (atom nil))
 
 (defn global-bind-sip-provider!
   "Bind the sip-provider in global scope."
-  {:added "0.2.0"}
   [provider]
   (reset! global-sip-provider provider))
 
 (defn global-unbind-sip-provider!
   "Unbind the sip-provider in global scope."
-  {:added "0.2.0"}
   []
   (reset! global-sip-provider nil))
 
 (defn already-bound-provider?
   "Check whether the *sip-provider* has been bound in current thread."
-  {:added "0.2.0"}
   []
   (and (bound? #'*sip-provider*) (instance? SipProvider *sip-provider*)))
 
 (defn provider-can-be-found?
   "Check where the *sip-provider* has been bound or global sip-provider has been set."
-  {:added "0.2.0"}
   []
   (or (already-bound-provider?) (not (nil? @global-sip-provider))))
 
-(defn sip-provider
+(defn ^SipProvider sip-provider
   "Get the current bound *sip-provider* or global-sip-provider."
-  {:added "0.2.0"}
   []
   (if (already-bound-provider?)
     *sip-provider*
     (or @global-sip-provider (throw (RuntimeException. "The 'cljain.sip.core/*sip-provider*' should be bound.")))))
 
-(defn sip-stack
+(defn ^SipStack sip-stack
   "Get the SipStack object from a SipProvider object."
-  {:added "0.2.0"}
   []
   (.getSipStack (sip-provider)))
 
 (defn stack-name
   "Get the SipStack name from a SipProvider object."
-  {:added "0.2.0"}
   []
   (.getStackName (sip-stack)))
 
 (defn- map-listening-point
   "Get the ip, port, and transport from a ListeningPoint object, then pack them as a map."
-  {:added "0.2.0"}
-  [lp]
+  [^ListeningPoint lp]
   {:ip (.getIPAddress lp) :port (.getPort lp) :transport (.getTransport lp)})
 
-(defn listening-point
+(defn ^ListeningPoint listening-point
   "Get the current bound listening ip, port and transport information."
-  {:added "0.2.0"}
   ([] (map-listening-point (.getListeningPoint (sip-provider))))
   ([transport] (map-listening-point (.getListeningPoint (sip-provider) transport))))
 
-(defn sip-provider!
+(defn ^SipProvider sip-provider!
   "Create a new SipProvider with meaningful name, local ip, port, transport and other optional SipStack properties.
   Rember, the name must be unique to make a distinction between other provider.
   To set standard SipStack properties, use the property's lowcase short name as keyword.
@@ -90,7 +79,6 @@
   http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html
   and
   http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/index.html"
-  {:added "0.2.0"}
   [name ip port transport & properties]
   {:pre [(or (nil? (:outbound-proxy properties))
            (re-find #"^\d+\.\d+\.\d+\.\d+(:\d+)?(/(tcp|TCP|udp|UDP))?$" (:outbound-proxy properties)))]}
@@ -109,16 +97,13 @@
 
 (defn- trans-from-event
   "Get ServerTransaction or ClientTransaction from an event object."
-  {:added "0.2.0"}
   [event]
   (if (.isServerTransaction event)
     (.getServerTransaction event)
     (.getClientTransaction event)))
 
-(defmacro trace-call
+(defmacro ^:private trace-call
   "Log the exception from event callback."
-  {:added "0.2.0"
-   :private true}
   [callback event & arg]
   (let [callback-name (str "process" (reduce str (map capitalize (split (str callback) #"-"))))]
     `(try
@@ -131,7 +116,6 @@
   "Set several event listening function to current bound provider.
   Because JAIN-SIP just allow set listener once, if call 'set-listener' more then one times,
   an exception will be thrown."
-  {:added "0.2.0"}
   [{:keys [request response timeout io-exception transaction-terminated dialog-terminated]}]
   {:pre [(or (nil? request) (fn? request))
          (or (nil? response) (fn? response))
@@ -156,7 +140,6 @@
 
 (defn start!
   "Start to run the stack which bound with current bound provider."
-  {:added "0.2.0"}
   []
   (.start (sip-stack)))
 
@@ -164,51 +147,43 @@
   "Stop the stack wich bound with current bound provider. And release all resource associated the stack.
   Becareful, after called 'stop!' function, all other function include 'start!' will be invalid.
   A new provider need be generated for later call."
-  {:added "0.2.0"}
   []
   (.stop (sip-stack)))
 
 (defn gen-call-id-header
   "Generate a new Call-ID header use current bound provider."
-  {:added "0.2.0"}
   []
   (.getNewCallId (sip-provider)))
 
 (defn send-request!
   "Send out of dialog SipRequest use current bound provider."
-  {:added "0.2.0"}
   [request]
   (.sendRequest (sip-provider) request))
 
-(defn new-server-transaction!
+(defn ^ServerTransaction new-server-transaction!
   "An application has the responsibility of deciding to respond to a Request
   that does not match an existing server transaction."
-  {:added "0.2.0"}
   [request]
   (.getNewServerTransaction (sip-provider) request))
 
-(defn new-client-transcation!
+(defn ^ClientTransaction new-client-transcation!
   "Before an application can send a new request it must first request
   a new client transaction to handle that Request."
-  {:added "0.2.0"}
   [request]
   (.getNewClientTransaction (sip-provider) request))
 
 (defn transaction?
   "Check the obj is an instance of javax.sip.Transaction.
   Both ClientTransaction and ServerTransaction are pass."
-  {:added "0.4.0"}
   [object]
   (instance? Transaction object))
 
 (defn new-dialog!
   "Create a dialog for the given transaction."
-  {:added "0.2.0"}
   [transaction]
   (.getNewDialog (sip-provider) transaction))
 
 (defn dialog?
   "Check the obj is an instance of javax.sip.Dialog"
-  {:added "0.4.0"}
   [object]
   (instance? Dialog object))
