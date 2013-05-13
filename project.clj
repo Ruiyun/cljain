@@ -1,4 +1,4 @@
-(defproject cljain "0.5.0-SNAPSHOT"
+(defproject cljain "0.5.0-RC2"
   :description "Enjoy JAIN-SIP in Clojure's way."
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/tools.logging "0.2.3"]
@@ -11,5 +11,5 @@
   :url "https://github.com/Ruiyun/cljain"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
-  :profiles {:dev {:dependencies [[org.slf4j/slf4j-api "1.6.4"]]
+  :profiles {:dev {:dependencies [[log4j/log4j "1.2.16"]]
                    :plugins [[codox "0.6.4"]]}})

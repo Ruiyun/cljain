@@ -5,7 +5,7 @@
               (require '[cljain.sip.core :as sip]
                 '[cljain.sip.address :as addr])
 
-              (defmethod handle-request :MESSAGE [request transcation _]
+              (defmethod handle-request :MESSAGE [request transaction _]
                 (println \"Received: \" (.getContent request))
                 (send-response! 200 :in transaction :pack \"I receive the message from myself.\"))
 
