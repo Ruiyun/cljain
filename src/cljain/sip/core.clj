@@ -95,12 +95,20 @@
           listening-point (.createListeningPoint sip-stack ip port transport)]
       (.createSipProvider sip-stack listening-point))))
 
-(defn- trans-from-event
-  "Get ServerTransaction or ClientTransaction from an event object."
-  [event]
-  (if (.isServerTransaction event)
-    (.getServerTransaction event)
-    (.getClientTransaction event)))
+(defprotocol EventTrans
+  (trans [this]))
+
+(extend-protocol EventTrans
+  TimeoutEvent
+  (trans [this]
+    (if (.isServerTransaction this)
+      (.getServerTransaction this)
+      (.getClientTransaction this)))
+  TransactionTerminatedEvent
+  (trans [this]
+    (if (.isServerTransaction this)
+      (.getServerTransaction this)
+      (.getClientTransaction this))))
 
 (defmacro ^:private trace-call
   "Log the exception from event callback."
@@ -132,9 +140,9 @@
       (processIOException [this event]
         (trace-call io-exception event (.getHost event) (.getPort event) (.getTransport event)))
       (processTimeout [this event]
-        (trace-call timeout event (trans-from-event event) (.. event (getTimeout) (getValue))))
+        (trace-call timeout event (trans event) (.. event (getTimeout) (getValue))))
       (processTransactionTerminated [this event]
-        (trace-call transaction-terminated event (trans-from-event event)))
+        (trace-call transaction-terminated event (trans event)))
       (processDialogTerminated [this event]
         (trace-call dialog-terminated event (.getDialog event))))))
 

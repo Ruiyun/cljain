@@ -17,11 +17,11 @@
   This new Request does not contain a body."
   [method req-uri from call-id & more-headers]
   (let [headers (apply hash-map (mapcat #(vector (.getName ^Header %) %) (remove nil? (flatten more-headers))))
-        c-seq (get headers "CSeq" (header/c-seq 1 method))
+        cseq (get headers "CSeq" (header/cseq 1 method))
         to (get headers "To" (header/to (addr/address req-uri) nil))
         via (remove nil? [(get headers "Via")])
         max-forward (get headers "Max-Forwards" (header/max-forwards 70))
-        request (.createRequest factory req-uri method call-id c-seq from to via max-forward)
+        request (.createRequest factory req-uri method call-id cseq from to via max-forward)
         remain-headers (remove #(#{"From" "Call-ID" "CSeq" "To" "Via" "Max-Forwards"} %) (keys headers))
         remain-headers (vals (select-keys headers remain-headers))]
     (doseq [h remain-headers] (.setHeader request h))
@@ -47,7 +47,7 @@
 (defn inc-sequence-number!
   "Increase the sequence number of a request's CSeq header."
   [^Request request]
-  (let [sequence-number   (inc (.getSequenceNumber ^CSeqHeader (.getHeader request "CSeq")))
-        new-c-seq-header  (header/c-seq sequence-number (.getMethod request))]
-    (.setHeader request new-c-seq-header)
+  (let [sequence-number  (inc (.getSequenceNumber ^CSeqHeader (.getHeader request "CSeq")))
+        new-cseq-header  (header/cseq sequence-number (.getMethod request))]
+    (.setHeader request new-cseq-header)
     request))

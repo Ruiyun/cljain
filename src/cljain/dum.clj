@@ -45,7 +45,7 @@
               [ruiyun.tools.timer :as timer]
               [clojure.tools.logging :as log])
     (:import [javax.sip Transaction ClientTransaction ServerTransaction SipProvider SipStack SipFactory Dialog]
-             [javax.sip.message Request Response]
+             [javax.sip.message Message Request Response]
              [javax.sip.address Address]
              [javax.sip.header HeaderAddress]
              [gov.nist.javax.sip.clientauthutils AccountManager UserCredentials AuthenticationHelper]
@@ -99,7 +99,7 @@
                      (or (= status-code Response/UNAUTHORIZED)
                        (= status-code Response/PROXY_AUTHENTICATION_REQUIRED)) ; need authentication
                      (let [^HeaderFactory header-factory (.createHeaderFactory core/sip-factory)
-                           ^SipStack sip-stack (.getSipStack (core/sip-provider))
+                           ^SipStackExt sip-stack (.getSipStack (core/sip-provider))
                            ^AuthenticationHelper auth-helper (.getAuthenticationHelper sip-stack (AccountManagerImpl.) header-factory)
                            ^ClientTransaction client-trans-with-auth (.handleChallenge auth-helper response transaction (core/sip-provider) 5)]
                        (.setApplicationData client-trans-with-auth (.getApplicationData transaction))
@@ -107,7 +107,7 @@
 
                      (> lead-number-of-status-code 3) ; 4xx, 5xx, 6xx means error
                      (and process-failure (process-failure :transaction transaction :dialog dialog :response response))))))
-   :timeout (fn [transaction _]
+   :timeout (fn [^Transaction transaction, _]
               (let [process-timeout (:on-timeout (.getApplicationData transaction))]
                 (and process-timeout (process-timeout :transaction transaction))))})
 
@@ -121,7 +121,7 @@
 (defn- set-content!
   "Parse the :pack argument from 'send-request!' and 'send-response!',
   then try to set the appropriate Content-Type header and content to the message."
-  [message content]
+  [^Message message, content]
   (when (not (nil? content))
     (let [content-type        (name (or (:type content) "text"))
           content-sub-type    (name (or (:sub-type content) "plain"))
@@ -150,7 +150,7 @@
      :sub-type \"pidf-diff+xml\"
      :content content-object}"
   [message & {content :pack
-              ^HeaderAddress to-address :to
+              ^Address to-address :to
               transport :use
               ^Dialog dialog :in
               more-headers :more-headers
@@ -193,7 +193,7 @@
             call-id-header  (core/gen-call-id-header)
             via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
             request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header more-headers)
-            ^Transaction transaction     (core/new-client-transcation! request)]
+            ^ClientTransaction transaction     (core/new-client-transcation! request)]
         (.setApplicationData transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
         (set-content! request content)
         (.sendRequest transaction)
