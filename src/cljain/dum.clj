@@ -8,7 +8,7 @@
           (println \"Received: \" (.getContent request))
           (send-response! 200 :in transaction :pack \"I receive the message from myself.\"))
 
-        (global-set-account :user \"bob\" :domain \"localhost\" :display-name \"Bob\" :password \"thepwd\")
+        (global-set-account {:user \"bob\" :domain \"localhost\" :display-name \"Bob\" :password \"thepwd\"})
         (sip/global-bind-sip-provider! (sip/sip-provider! \"my-app\" \"localhost\" 5060 \"udp\"))
         (sip/set-listener! (dum-listener))
         (sip/start!)

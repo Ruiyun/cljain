@@ -33,11 +33,9 @@
 (defn address
   "Create a new Address object using a URI.
   It useful to create the To header etc."
-  ([^URI uri]
-    {:post [(instance? Address %)]}
-    (.createAddress factory uri))
-  ([^URI uri display-name]
-    {:post [(instance? Address %)]}
+  ([^String address]
+    (.createAddress factory address))
+  ([^URI uri, display-name]
     (.createAddress factory display-name uri)))
 
 (defn sip-address

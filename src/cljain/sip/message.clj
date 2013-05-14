@@ -18,7 +18,7 @@
   [method req-uri from call-id & more-headers]
   (let [headers (apply hash-map (mapcat #(vector (.getName ^Header %) %) (remove nil? (flatten more-headers))))
         cseq (get headers "CSeq" (header/cseq 1 method))
-        to (get headers "To" (header/to (addr/address req-uri) nil))
+        to (get headers "To" (header/to (addr/address req-uri nil) nil))
         via (remove nil? [(get headers "Via")])
         max-forward (get headers "Max-Forwards" (header/max-forwards 70))
         request (.createRequest factory req-uri method call-id cseq from to via max-forward)
