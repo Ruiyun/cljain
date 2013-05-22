@@ -16,3 +16,4 @@ autodoc/**
 doc/**
 /target
 target/**
+.lein-repl-history
