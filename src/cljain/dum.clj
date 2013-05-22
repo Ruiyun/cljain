@@ -189,10 +189,9 @@
             to-header       (if (= method "REGISTER") ; for REGISTER, To header's uri should equal the From header's.
                               (header/to (.getAddress from-header) nil) ; tag will be auto generated in transaction
                               (header/to to-address nil))
-            contact-header  (header/contact (addr/sip-address ip :port port :transport transport :user user))
             call-id-header  (core/gen-call-id-header)
             via-header      (header/via ip port transport nil) ; via branch will be auto generated before message sent.
-            request         (msg/request method request-uri from-header call-id-header to-header via-header contact-header more-headers)
+            request         (msg/request method request-uri from-header call-id-header to-header via-header more-headers)
             ^ClientTransaction transaction     (core/new-client-transcation! request)]
         (.setApplicationData transaction {:on-success on-success, :on-failure on-failure :on-timeout on-timeout})
         (set-content! request content)
@@ -212,9 +211,8 @@
                                       (core/listening-point)
                                       (core/listening-point transport))
         user            (*current-account* :user)
-        contact-header  (header/contact (addr/sip-address ip :port port :transport transport :user user))
         request         (.getRequest transaction)
-        response        (msg/response status-code request contact-header more-headers)]
+        response        (msg/response status-code request more-headers)]
     (set-content! response content)
     (.sendResponse transaction response)))
 
