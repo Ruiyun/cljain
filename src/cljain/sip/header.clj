@@ -13,7 +13,8 @@
             ServerHeader SIPETagHeader SIPIfMatchHeader SubjectHeader SubscriptionStateHeader SupportedHeader TimeStampHeader
             ToHeader UnsupportedHeader UserAgentHeader ViaHeader WarningHeader WWWAuthenticateHeader]
            [javax.sip.address Address URI]
-           [gov.nist.javax.sip Utils]))
+           [gov.nist.javax.sip Utils]
+           [gov.nist.javax.sip.header HeaderFactoryImpl]))
 
 (def ^{:doc "The factory to create sip headers."
        :tag HeaderFactory
@@ -136,7 +137,7 @@
 (defn ^Header extension
   "Creates a new Header based on the newly supplied name and value values."
   [name value]
-  (.createHeader factory name (str value)))
+  (.createExtensionHeader ^HeaderFactoryImpl factory name (str value)))
 
 
 (defn header?
