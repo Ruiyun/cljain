@@ -1,4 +1,4 @@
-(defproject cljain "0.6.0-beta1"
+(defproject cljain "0.6.0-SNAPSHOT"
   :description "Enjoy JAIN-SIP in Clojure's way."
   :dependencies [[org.clojure/tools.logging "0.2.6"]
                  [ruiyun/tools.timer "1.0.1"]
