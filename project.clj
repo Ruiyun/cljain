@@ -1,4 +1,4 @@
-(defproject cljain "0.6.0-SNAPSHOT"
+(defproject cljain "0.6.0-beta1"
   :description "Enjoy JAIN-SIP in Clojure's way."
   :dependencies [[org.clojure/tools.logging "0.2.6"]
                  [ruiyun/tools.timer "1.0.1"]
@@ -6,7 +6,8 @@
                  [javax.sip/jain-sip-ri "1.2.166"]
                  [log4j/log4j "1.2.16"]]
   :lein-release {:deploy-via :clojars}
-  :warn-on-reflection true
+  :global-vars {*warn-on-reflection* true
+                *assert* true}
   :min-lein-version "2.0.0"
   :url "https://github.com/Ruiyun/cljain"
   :license {:name "Apache License, Version 2.0"
