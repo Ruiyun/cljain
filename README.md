@@ -37,6 +37,8 @@ And here is an example to show how to work with cljain.
   :on-timeout (fn [& _] (println "Timeout, try it later.")))
 ```
 
+You can find more examples in the test directory.
+
 Documentation
 =============
 
